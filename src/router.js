@@ -14,6 +14,16 @@ export default new Router({
       component: Home
     },
     {
+      path: '/channel/:uid',
+      name: 'channel',
+      component: Home
+    },
+    {
+      path: '/callback',
+      name: 'callback',
+      component: Home
+    },
+    {
       path: '/about',
       name: 'about',
       // route level code-splitting
