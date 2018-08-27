@@ -33,6 +33,12 @@
         </div>
       </div>
     </div>
+    <footer class="card-footer">
+      <a class="card-footer-item" @click="debug">Debug</a>
+      <a class="card-footer-item" @click="like">Like</a>
+      <a class="card-footer-item" @click="repost">Repost</a>
+      <a class="card-footer-item" @click.prevent="reply">Reply</a>
+    </footer>
   </div>
 </template>
 
@@ -40,6 +46,18 @@
   export default {
     name: "Entry",
     props: ['item'],
+
+    methods: {
+      debug() {
+        this.$emit('debug', this.item)
+      },
+      like() {
+        this.$emit('like', this.item)
+      },
+      repost() {
+        this.$emit('repost', this.item)
+      }
+    },
 
     computed: {
       classes() {
