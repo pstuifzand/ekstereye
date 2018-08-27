@@ -1,7 +1,7 @@
 <template>
-  <div class="entry card">
+  <div :class="classes">
     <div class="card-image" v-if="photo_first">
-      <figure class="image is-4by3">
+      <figure class="image">
         <img :src="photo_first"/>
       </figure>
     </div>
@@ -27,7 +27,7 @@
 
           <div class="debug" v-text="item" v-if="this.$store.state.debug"></div>
 
-          <a :href="item.url">
+          <a :href="item.url" target="_new">
             <span class="published" v-html="item.published"></span>
           </a>
         </div>
@@ -42,6 +42,9 @@
     props: ['item'],
 
     computed: {
+      classes() {
+        return {'entry': true, 'card': true, 'unread': !this.item._is_read}
+      },
       main_content() {
         let content = this.item.content
         if (content) {
@@ -89,6 +92,11 @@
 
 <style scoped>
   .entry {
+    border: 1px solid #ccc;
+  }
+
+  .unread {
+    box-shadow: 0 4px 8px 0 rgba(255, 255, 0, 0.8), 0 6px 20px 0 rgba(255, 255, 0, 0.5);
   }
 
   .photos {

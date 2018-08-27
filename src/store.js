@@ -22,14 +22,21 @@ export default new Vuex.Store({
       state.channels = channels
     },
     newTimeline(state, {channel, timeline}) {
-      state.timeline = timeline
       state.channel = channel
+      state.timeline = timeline
     },
     newAccessToken(state, {me, access_token, scope}) {
       state.logged_in = true
       state.scope = scope
       state.me = me
       state.access_token = access_token
+    },
+    clearTimeline(state, {channel}) {
+      state.channel = channel
+      state.timeline = {
+        items: [],
+        paging: {}
+      }
     }
   },
 
@@ -44,6 +51,9 @@ export default new Vuex.Store({
         .then(response => {
           commit('newChannels', response.channels)
         })
+    },
+    switchChannel({commit}, channel) {
+      commit('clearTimeline', {channel: channel})
     },
     fetchTimeline({commit}, channel) {
       let url = 'https://microsub.stuifzandapp.com/microsub?action=timeline&channel=' + channel.uid

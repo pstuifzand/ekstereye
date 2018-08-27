@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <nav id="nav" class="navbar is-primary">
+    <nav id="nav" class="navbar is-primary is-fixed-top">
       <div class="container">
         <div class="navbar-brand">
           <router-link to="/" class="navbar-item">Ekster</router-link>
@@ -19,9 +19,8 @@
     </nav>
     <div class="container">
       <router-view/>
-
-      <LoginModal :active="!this.$store.state.logged_in"></LoginModal>
     </div>
+    <LoginModal :active="!this.$store.state.logged_in"></LoginModal>
   </div>
 </template>
 

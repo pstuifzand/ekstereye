@@ -1,18 +1,13 @@
 <template>
   <div class="home">
-    <div class="columns">
-      <div class="column is-2">
-        <Channels class="channels" :channels="this.$store.state.channels">
-          <div slot-scope="{ channel }">
-            <Channel :channel="channel" @channel-selected="selectChannel"></Channel>
-          </div>
-        </Channels>
+    <Channels class="channels" :channels="this.$store.state.channels">
+      <div slot-scope="{ channel }">
+        <Channel :channel="channel" @channel-selected="selectChannel"></Channel>
       </div>
-      <div class="column">
-        <Timeline class="timeline" :timeline="this.$store.state.timeline" :channel="this.$store.state.channel"
-                  @getPage="getPage"></Timeline>
-      </div>
-    </div>
+    </Channels>
+
+    <Timeline class="timeline" :timeline="this.$store.state.timeline" :channel="this.$store.state.channel"
+              @getPage="getPage"></Timeline>
   </div>
 </template>
 
@@ -30,12 +25,6 @@
       Channel
     },
 
-    data() {
-      return {
-        showChannels: false
-      }
-    },
-
     computed: {
       uid() {
         return this.$route.params.uid || 'home';
@@ -44,13 +33,16 @@
 
     methods: {
       selectChannel(channel) {
-        this.$store.dispatch('fetchTimeline', channel)
-        this.showChannels = false
-        window.scrollTo({top: 0})
+        this.$store.dispatch('switchChannel', channel).then(() => {
+          this.$store.dispatch('fetchTimeline', channel).then(() => {
+            window.scrollTo({top: 0})
+          })
+        })
       },
       getPage(next) {
-        this.$store.dispatch('fetchTimeline', next)
-        window.scrollTo({top: 0})
+        this.$store.dispatch('fetchTimeline', next).then(() => {
+          window.scrollTo({top: 0})
+        })
       }
     },
 
@@ -67,5 +59,19 @@
   .timeline {
     margin-top: 20px;
     width: 600px;
+    position: absolute;
+    left: 270px;
+
+    padding-bottom: 100px;
+  }
+
+  .channels {
+    position: fixed;
+    top: 52px;
+    height: calc(100vh - 52px);
+    width: 250px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding-bottom: 100px;
   }
 </style>
