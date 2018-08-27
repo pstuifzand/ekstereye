@@ -83,8 +83,6 @@ export default new Vuex.Store({
       commit('newAccessToken', response)
     },
     markRead(x, {channel, entry}) {
-      // eslint-disable-next-line
-      console.log(channel, entry)
       let url = 'https://microsub.stuifzandapp.com/microsub?action=timeline&method=mark_read&channel=' + encodeURIComponent(channel) + '&entry=' + encodeURIComponent(entry);
       return fetch(url, {
         method: 'POST',

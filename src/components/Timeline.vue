@@ -51,6 +51,9 @@
       },
       prevPage() {
         this.$emit('getPage', {uid: this.channel.uid, before: this.timeline.paging.before})
+      },
+      markRead(channel, id) {
+        return this.$store.dispatch('markRead', {channel:channel, entry: id })
       }
     },
 
@@ -59,12 +62,18 @@
         // let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
         let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === this.$el.offsetHeight + document.documentElement.offsetHeight + 20;
         if (bottomOfWindow) {
+          let count = 0
           this.$children.forEach((child) => {
             if (child.$props.item && !child.$props.item._is_read) {
               child.$props.item._is_read = true
-              this.$store.dispatch('markRead', child.$props.item.uid)
+              let item = child.$props.item
+              this.markRead(this.channel.uid, item._id)
+              count++
             }
           })
+          if (count > 0) {
+            this.$store.dispatch('fetchChannels')
+          }
         }
 
         this.$children.forEach((child) => {
@@ -72,7 +81,8 @@
           if (rect.top + rect.height < 100) {
             if (child.$props.item && !child.$props.item._is_read) {
               child.$props.item._is_read = true
-              this.$store.dispatch('markRead', {channel:this.channel.uid, entry: child.$props.item._id }).then(() => {
+              let item = child.$props.item
+              this.markRead(this.channel.uid, item._id).then(() => {
                 this.$store.dispatch('fetchChannels')
               })
             }
