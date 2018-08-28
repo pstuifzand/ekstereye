@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
+const baseurl = "https://microsub.stuifzandapp.com/microsub"
 
 Vue.use(Vuex)
 
@@ -42,7 +43,7 @@ export default new Vuex.Store({
 
   actions: {
     fetchChannels({commit}) {
-      fetch('https://microsub.stuifzandapp.com/microsub?action=channels', {
+      fetch(baseurl + '?action=channels', {
         headers: {
           'Authorization': 'Bearer ' + this.state.access_token
         }
@@ -56,7 +57,7 @@ export default new Vuex.Store({
       commit('clearTimeline', {channel: channel})
     },
     fetchTimeline({commit}, channel) {
-      let url = 'https://microsub.stuifzandapp.com/microsub?action=timeline&channel=' + channel.uid
+      let url = baseurl + '?action=timeline&channel=' + channel.uid
       if (channel.after) {
         url += '&after=' + channel.after;
       }
@@ -83,7 +84,7 @@ export default new Vuex.Store({
       commit('newAccessToken', response)
     },
     markRead(x, {channel, entry}) {
-      let url = 'https://microsub.stuifzandapp.com/microsub?action=timeline&method=mark_read&channel=' + encodeURIComponent(channel) + '&entry=' + encodeURIComponent(entry);
+      let url = baseurl + '?action=timeline&method=mark_read&channel=' + encodeURIComponent(channel) + '&entry=' + encodeURIComponent(entry);
       return fetch(url, {
         method: 'POST',
         headers: {
