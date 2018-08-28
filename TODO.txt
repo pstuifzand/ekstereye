@@ -1,0 +1,16 @@
+Some features that need to be implemented
+
+- Real Indieauth
+- Get endpoints from homepage of user
+- Micropub
+- Infinite scrolling
+- Scrolling backward and forward
+- Preview
+- Follow, unfollow feeds
+- Channels create, update, delete
+- References to other posts: "refs"
+- Channel ordering
+- Different interfaces (perhaps Twitter, Mastodon like)
+- Better responsive interface
+- Websockets? Show new channels and new items in channels directly, needs
+  micropub server support
