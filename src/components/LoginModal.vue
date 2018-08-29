@@ -63,6 +63,7 @@
         })
         micropub.getAuthUrl().then(url => {
           let options = {
+            micropubEndpoint: micropub.options.micropubEndpoint,
             tokenEndpoint: micropub.options.tokenEndpoint,
             loginState: state
           }

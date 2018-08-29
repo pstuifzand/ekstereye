@@ -10,7 +10,7 @@
       <div class="media">
         <div class="media-left">
           <figure class="image is-48x48">
-            <img :src="item.author.photo"/>
+            <img :src="author_photo"/>
           </figure>
         </div>
 
@@ -52,7 +52,7 @@
         this.$emit('debug', this.item)
       },
       like() {
-        this.$emit('like', this.item)
+        this.$store.dispatch('micropubLike', this.item)
       },
       repost() {
         this.$emit('repost', this.item)
@@ -96,13 +96,25 @@
         return []
       },
       author_name() {
+        if (!this.item.author) {
+          return 'anonymouse';
+        }
         if (!this.item.author.name) {
           return new URL(this.item.author.url).hostname
         }
         return this.item.author.name
       },
       author_url() {
+        if (!this.item.author) {
+          return '';
+        }
         return this.item.author.url
+      },
+      author_photo() {
+        if (!this.item.author) {
+          return '';
+        }
+        return this.item.author.photo
       }
     }
   }

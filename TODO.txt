@@ -2,6 +2,9 @@ Some features that need to be implemented
 
 - Get Microsub endpoint from homepage of user
 - Micropub
+  - Like
+  - Reply
+  - Repost
 - Infinite scrolling
 - Scrolling backward and forward
 - Preview

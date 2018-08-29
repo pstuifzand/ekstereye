@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import Micropub from 'micropub-helper';
 
 const baseurl = "https://microsub.stuifzandapp.com/microsub"
 
@@ -18,12 +19,12 @@ export default new Vuex.Store({
     };
     let loginData = JSON.parse(window.localStorage.getItem('login_data'))
     if (loginData) {
-      newState = { ...newState, ...loginData }
+      newState = {...newState, ...loginData}
       newState.logged_in = loginData.access_token && loginData.access_token.length > 0
     }
     let endpoints = JSON.parse(window.localStorage.getItem('endpoints'))
     if (endpoints) {
-      newState = { ...newState, ...endpoints}
+      newState = {...newState, ...endpoints}
     }
     return newState
   },
@@ -104,6 +105,16 @@ export default new Vuex.Store({
         headers: {
           'Authorization': 'Bearer ' + this.state.access_token
         }
+      })
+    },
+    micropubLike(_, item) {
+      // eslint-disable-next-line
+      let micropub = new Micropub({
+        token: this.state.access_token,
+        micropubEndpoint: this.state.micropubEndpoint
+      })
+      micropub.postMicropub({
+        'like-of': [item.url]
       })
     }
   }
