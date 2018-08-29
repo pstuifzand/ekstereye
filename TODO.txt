@@ -14,3 +14,4 @@ Some features that need to be implemented
 - Better responsive interface
 - Websockets? Show new channels and new items in channels directly, needs
   micropub server support
+- Improve handling of entries with missing values (like missing author)

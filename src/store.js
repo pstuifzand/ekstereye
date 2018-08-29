@@ -8,14 +8,17 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state() {
     let loginData = JSON.parse(window.localStorage.getItem('login_data'))
-    return {
-      ...loginData,
+    let newState = {
       channels: [],
       timeline: {items: [], paging: {}},
       channel: {},
       debug: false,
-      logged_in: loginData.access_token && loginData.access_token.length > 0
+    };
+    if (loginData) {
+      newState = { ...newState, ...loginData }
+      newState.logged_in = loginData.access_token && loginData.access_token.length > 0
     }
+    return newState
   },
 
   mutations: {

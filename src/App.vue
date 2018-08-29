@@ -31,8 +31,11 @@
     name: 'App',
     components: {LoginModal},
     mounted() {
-      let loginData = JSON.parse(window.localStorage.getItem('login_data'))
-      this.$store.dispatch('isLoggedIn', loginData)
+      let item = window.localStorage.getItem('login_data');
+      if (item) {
+        let loginData = JSON.parse(item)
+        this.$store.dispatch('isLoggedIn', loginData)
+      }
     }
   }
 </script>

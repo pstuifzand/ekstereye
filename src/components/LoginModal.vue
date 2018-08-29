@@ -84,7 +84,7 @@
       }).then(response => response.json())
         .then(response => {
           this.$store.dispatch('tokenResponse', response)
-          this.active = false
+          this.show = false
           this.$router.push('/')
         })
     }
