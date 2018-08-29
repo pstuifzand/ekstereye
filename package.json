@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "isomorphic-fetch": "^2.2.1",
     "micropub-helper": "^1.4.0",
     "node-sass": "^4.9.3",
     "vue": "^2.5.17",

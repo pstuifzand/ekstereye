@@ -26,6 +26,7 @@
 <script>
   import Micropub from 'micropub-helper';
   import helper from '@/helpers';
+  import relScraper from '@/helpers/rel-scraper'
 
   const CLIENT_ID = 'https://p83.nl/'
 
@@ -61,14 +62,14 @@
           state: state,
           scope: 'create post channels timeline'
         })
+
         micropub.getAuthUrl().then(url => {
           let options = {
-            micropubEndpoint: micropub.options.micropubEndpoint,
-            tokenEndpoint: micropub.options.tokenEndpoint,
             loginState: state
           }
-          this.$store.dispatch('saveEndpoints', options)
-          window.location = url
+          this.$store.dispatch('saveEndpoints', options).then(() => {
+            window.location = url
+          })
           // eslint-disable-next-line
         }).catch(err => console.log(err))
       }
@@ -92,22 +93,36 @@
         me: this.$route.query['me'],
         state: this.$store.state.loginState,
         scope: 'create post channels timeline',
-        tokenEndpoint: this.$store.state.tokenEndpoint
       })
 
-      micropub
-        .getToken(code)
-        .then(token => {
-          this.$store.dispatch('tokenResponse', {
-            access_token: token,
-            me: micropub.options.me,
-            scope: micropub.options.scope
+      relScraper(this.$route.query['me']).then(rels => {
+        micropub.options.tokenEndpoint = rels.token_endpoint
+        micropub.options.authEndpoint = rels.auth_endpoint
+        micropub.options.micropubEndpoint = rels.micropub
+
+        let options = {
+          tokenEndpoint: rels.token_endpoint,
+          authEndpoint: rels.auth_endpoint,
+          micropubEndpoint: rels.micropub,
+          microsubEndpoint: rels.microsub
+        }
+
+        this.$store.dispatch('saveEndpoints', options)
+
+        micropub
+          .getToken(code)
+          .then(token => {
+            this.$store.dispatch('tokenResponse', {
+              access_token: token,
+              me: micropub.options.me,
+              scope: micropub.options.scope
+            })
+            this.show = false
+            this.$router.push('/')
           })
-          this.show = false
-          this.$router.push('/')
-        })
-        // eslint-disable-next-line
-        .catch(err => console.log(err));
+          // eslint-disable-next-line
+          .catch(err => console.log(err));
+      })
     }
   }
 </script>
