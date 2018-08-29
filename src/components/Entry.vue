@@ -37,7 +37,7 @@
       <a class="card-footer-item" @click="debug">Debug</a>
       <a class="card-footer-item" @click="like">Like</a>
       <a class="card-footer-item" @click="repost">Repost</a>
-      <a class="card-footer-item" @click="reply">Reply</a>
+      <a class="card-footer-item" @click.prevent="console.log('unimplemented')">Reply</a>
     </footer>
   </div>
 </template>
@@ -110,7 +110,9 @@
           return 'anonymouse';
         }
         if (!this.item.author.name) {
-          return new URL(this.item.author.url).hostname
+          if (this.item.author.url) {
+            return new URL(this.item.author.url).hostname
+          }
         }
         return this.item.author.name
       },
@@ -118,10 +120,16 @@
         if (!this.item.author) {
           return '';
         }
+        if (!this.item.author.url) {
+          return '';
+        }
         return this.item.author.url
       },
       author_photo() {
         if (!this.item.author) {
+          return '';
+        }
+        if (!this.item.author.photo) {
           return '';
         }
         return this.item.author.photo
