@@ -5,10 +5,11 @@ Some features that need to be implemented
   - Like
   - Reply
   - Repost
+  - Bookmark?
 - Infinite scrolling
 - Scrolling backward and forward
 - Preview
-- Follow, unfollow feeds
+- Follow, Unfollow feeds
 - Channels create, update, delete
 - References to other posts: "refs"
 - Channel ordering
@@ -17,3 +18,10 @@ Some features that need to be implemented
 - Websockets? Show new channels and new items in channels directly, needs
   micropub server support
 - Improve handling of entries with missing values (like missing author)
+
+
+## Ideas
+
+### Integrated post interface at the top of the timeline
+
+

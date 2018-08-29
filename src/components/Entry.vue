@@ -37,7 +37,7 @@
       <a class="card-footer-item" @click="debug">Debug</a>
       <a class="card-footer-item" @click="like">Like</a>
       <a class="card-footer-item" @click="repost">Repost</a>
-      <a class="card-footer-item" @click.prevent="reply">Reply</a>
+      <a class="card-footer-item" @click="reply">Reply</a>
     </footer>
   </div>
 </template>
@@ -52,10 +52,20 @@
         this.$emit('debug', this.item)
       },
       like() {
-        this.$store.dispatch('micropubLike', this.item)
+        this.$store.dispatch('micropubPost', {
+          'type': ['h-entry'],
+          'properties': {
+            'like-of': [this.item.url]
+          },
+        })
       },
       repost() {
-        this.$emit('repost', this.item)
+        this.$store.dispatch('micropubPost', {
+          'type': ['h-entry'],
+          'properties': {
+            'repost-of': [this.item.url]
+          },
+        })
       }
     },
 

@@ -107,14 +107,19 @@ export default new Vuex.Store({
         }
       })
     },
-    micropubLike(_, item) {
-      // eslint-disable-next-line
+    micropubPost(_, mf2post) {
       let micropub = new Micropub({
         token: this.state.access_token,
         micropubEndpoint: this.state.micropubEndpoint
       })
-      micropub.postMicropub({
-        'like-of': [item.url]
+      return micropub.create(mf2post)
+    },
+    micropubLikeOf(_, url) {
+      this.dispatch({
+        'type': ['h-entry'],
+        'properties': {
+          'like-of': [url]
+        }
       })
     }
   }
