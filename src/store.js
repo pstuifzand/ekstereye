@@ -7,16 +7,23 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state() {
-    let loginData = JSON.parse(window.localStorage.getItem('login_data'))
     let newState = {
       channels: [],
       timeline: {items: [], paging: {}},
       channel: {},
       debug: false,
+      logged_in: false,
+      micropubEndpoint: '',
+      microsubEndpoint: ''
     };
+    let loginData = JSON.parse(window.localStorage.getItem('login_data'))
     if (loginData) {
       newState = { ...newState, ...loginData }
       newState.logged_in = loginData.access_token && loginData.access_token.length > 0
+    }
+    let endpoints = JSON.parse(window.localStorage.getItem('endpoints'))
+    if (endpoints) {
+      newState = { ...newState, ...endpoints}
     }
     return newState
   },
@@ -76,6 +83,10 @@ export default new Vuex.Store({
         .then(response => {
           commit('newTimeline', {channel: channel, timeline: response})
         })
+    },
+    saveEndpoints({commit}, endpoints) {
+      window.localStorage.setItem('endpoints', JSON.stringify(endpoints))
+      commit('newEndpoints', endpoints)
     },
     tokenResponse({commit}, response) {
       window.localStorage.setItem('login_data', JSON.stringify(response))

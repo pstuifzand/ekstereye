@@ -23,9 +23,11 @@
     <button class="modal-close is-large" aria-label="close" @click="close"></button>
   </div>
 </template>
-
 <script>
-  import qs from 'qs'
+  import Micropub from 'micropub-helper';
+  import helper from '@/helpers';
+
+  const CLIENT_ID = 'https://p83.nl/'
 
   export default {
     name: "LoginModal",
@@ -50,8 +52,24 @@
         this.show = false
       },
       login() {
-        // try to login with
-        window.location = 'https://p83.nl/auth?response_type=code&me=https://p83.nl/&redirect_uri=http://192.168.178.21:8080/callback&scope=channels+timeline&state=1234&client_id=https://p83.nl/';
+        const state = helper.generateState()
+
+        let micropub = new Micropub({
+          clientId: CLIENT_ID,
+          redirectUri: window.location.origin + '/callback',
+          me: this.url,
+          state: state,
+          scope: 'create post channels timeline'
+        })
+        micropub.getAuthUrl().then(url => {
+          let options = {
+            tokenEndpoint: micropub.options.tokenEndpoint,
+            loginState: state
+          }
+          this.$store.dispatch('saveEndpoints', options)
+          window.location = url
+          // eslint-disable-next-line
+        }).catch(err => console.log(err))
       }
     },
 
@@ -66,27 +84,29 @@
         return
       }
 
-      let tokenurl = 'https://p83.nl/authtoken'
-      let params = {}
-      params['grant_type'] = 'authorization_code'
-      params['code'] = code
-      params['client_id'] = 'https://p83.nl/'
-      params['redirect_uri'] = 'http://192.168.178.21:8080/callback'
-      params['me'] = 'https://p83.nl/'
+      // FIXME: clientId, redirectUri
+      let micropub = new Micropub({
+        clientId: CLIENT_ID,
+        redirectUri: window.location.origin + '/callback',
+        me: this.$route.query['me'],
+        state: this.$store.state.loginState,
+        scope: 'create post channels timeline',
+        tokenEndpoint: this.$store.state.tokenEndpoint
+      })
 
-      fetch(tokenurl, {
-        method: 'POST',
-        body: qs.stringify(params, {arrayFormat: 'brackets'}),
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Accept": "application/json"
-        }
-      }).then(response => response.json())
-        .then(response => {
-          this.$store.dispatch('tokenResponse', response)
+      micropub
+        .getToken(code)
+        .then(token => {
+          this.$store.dispatch('tokenResponse', {
+            access_token: token,
+            me: micropub.options.me,
+            scope: micropub.options.scope
+          })
           this.show = false
           this.$router.push('/')
         })
+        // eslint-disable-next-line
+        .catch(err => console.log(err));
     }
   }
 </script>
