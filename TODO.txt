@@ -1,7 +1,6 @@
 Some features that need to be implemented
 
-- Real Indieauth
-- Get endpoints from homepage of user
+- Get Microsub endpoint from homepage of user
 - Micropub
 - Infinite scrolling
 - Scrolling backward and forward
