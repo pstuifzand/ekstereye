@@ -1,44 +1,54 @@
 <template>
-  <div :class="classes">
-    <div class="card-image" v-if="photo_first">
-      <figure class="image">
-        <img :src="photo_first"/>
-      </figure>
-    </div>
+  <div>
+    <div :class="classes">
+      <div class="card-image" v-if="photo_first">
+        <figure class="image">
+          <img :src="photo_first"/>
+        </figure>
+      </div>
 
-    <div class="card-content">
-      <div class="media">
-        <div class="media-left">
-          <figure class="image is-48x48">
-            <img :src="author_photo"/>
-          </figure>
-        </div>
-
-        <div class="content">
-          <div><a :href="author_url">{{ author_name }}</a></div>
-          <h3 class="title is-6" v-if="item.name" v-text="item.name"></h3>
-          <div class="content" v-html="main_content"></div>
-
-          <div class="photos">
-            <div class="photo" v-for="photo in photo_rest" :key="photo">
-              <img :src="photo" class="image"/>
-            </div>
+      <div class="card-content">
+        <div class="media">
+          <div class="media-left">
+            <figure class="image is-48x48">
+              <img :src="author_photo"/>
+            </figure>
           </div>
 
-          <div class="debug" v-text="item" v-if="this.$store.state.debug"></div>
+          <div class="content">
+            <div><a :href="author_url">{{ author_name }}</a></div>
+            <h3 class="title is-6" v-if="item.name" v-text="item.name"></h3>
+            <div class="content" v-html="main_content"></div>
 
-          <a :href="item.url" target="_new">
-            <span class="published" v-html="item.published"></span>
-          </a>
+            <div class="photos">
+              <div class="photo" v-for="photo in photo_rest" :key="photo">
+                <img :src="photo" class="image"/>
+              </div>
+            </div>
+
+            <div class="debug" v-text="item" v-if="this.$store.state.debug"></div>
+
+            <a :href="item.url" target="_new">
+              <span class="published" v-html="item.published"></span>
+            </a>
+          </div>
         </div>
       </div>
+      <footer class="card-footer">
+        <a class="card-footer-item" @click="debug">Debug</a>
+        <a class="card-footer-item" @click="like">Like</a>
+        <a class="card-footer-item" @click="repost">Repost</a>
+        <a class="card-footer-item" @click="openReply">Reply</a>
+      </footer>
     </div>
-    <footer class="card-footer">
-      <a class="card-footer-item" @click="debug">Debug</a>
-      <a class="card-footer-item" @click="like">Like</a>
-      <a class="card-footer-item" @click="repost">Repost</a>
-      <a class="card-footer-item" @click.prevent="console.log('unimplemented')">Reply</a>
-    </footer>
+    <div class="card" v-if="replying">
+      <div class="card-content">
+        <textarea class="textarea" v-model="replyText"></textarea>
+      </div>
+      <footer class="card-footer">
+        <a class="card-footer-item" @click="reply">Reply</a>
+      </footer>
+    </div>
   </div>
 </template>
 
@@ -47,9 +57,31 @@
     name: "Entry",
     props: ['item'],
 
+    data() {
+      return {
+        'replying': false,
+        'replyText': ''
+      }
+    },
+
     methods: {
       debug() {
         this.$emit('debug', this.item)
+      },
+      openReply() {
+        this.replying = true
+      },
+      reply() {
+        this.$store.dispatch('micropubPost', {
+          'type': ['h-entry'],
+          'properties': {
+            'in-reply-to': [this.item.url],
+            'content': [this.replyText]
+          },
+        }).then(() => {
+          this.replyText = '';
+          this.replying = false
+        })
       },
       like() {
         this.$store.dispatch('micropubPost', {
@@ -71,7 +103,7 @@
 
     computed: {
       classes() {
-        return {'entry': true, 'card': true, 'unread': !this.item._is_read}
+        return {'entry': true, 'card': true, 'mb-20': true, 'unread': !this.item._is_read}
       },
       main_content() {
         let content = this.item.content

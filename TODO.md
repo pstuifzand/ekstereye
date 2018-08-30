@@ -2,11 +2,7 @@
 
 ## Some features that need to be implemented
 
-- Get Microsub endpoint from homepage of user
 - Micropub
-  - Like
-  - Reply
-  - Repost
   - Bookmark?
 - Infinite scrolling
 - Scrolling backward and forward
@@ -21,6 +17,13 @@
   micropub server support
 - Improve handling of entries with missing values (like missing author)
 
+## Completed
+
+- Indieauth (needs CORS on the server)
+- Get Microsub endpoint from homepage of user
+- Micropub
+  - Like
+  - Repost
 
 ## Ideas
 

@@ -53,7 +53,7 @@
         this.$emit('getPage', {uid: this.channel.uid, before: this.timeline.paging.before})
       },
       markRead(channel, id) {
-        return this.$store.dispatch('markRead', {channel:channel, entry: id })
+        return this.$store.dispatch('markRead', {channel: channel, entry: id})
       }
     },
 
@@ -96,5 +96,9 @@
 <style scoped>
   .timeline--item {
     margin-bottom: 16px;
+  }
+  .has-buttons {
+    justify-content: end;
+    padding:12px;
   }
 </style>
