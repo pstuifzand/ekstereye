@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div :class="classes">
+    <div :class="classes" @click="markRead">
       <div class="card-image" v-if="photo_first">
         <figure class="image">
           <img :src="photo_first"/>
@@ -15,7 +15,12 @@
             </figure>
           </div>
 
-          <div class="content">
+          <div v-if="isRef">
+            <div><a :href="author_url">{{ author_name }}</a> reposted:</div>
+            <Entry :item="innerRef" :isMainEntry="false"></Entry>
+          </div>
+
+          <div class="content" v-else>
             <div><a :href="author_url">{{ author_name }}</a></div>
             <h3 class="title is-6" v-if="item.name" v-text="item.name"></h3>
             <div class="content" v-html="main_content"></div>
@@ -26,19 +31,17 @@
               </div>
             </div>
 
-            <div class="debug" v-text="item" v-if="this.$store.state.debug"></div>
-
             <a :href="item.url" target="_new">
               <span class="published" v-html="item.published"></span>
             </a>
           </div>
         </div>
       </div>
-      <footer class="card-footer">
-        <a class="card-footer-item" @click="debug">Debug</a>
-        <a class="card-footer-item" @click="like">Like</a>
-        <a class="card-footer-item" @click="repost">Repost</a>
-        <a class="card-footer-item" @click="openReply">Reply</a>
+      <footer class="card-footer" v-if="showFooterButtons">
+        <a class="card-footer-item" @click.prevent="debug">Debug</a>
+        <a class="card-footer-item" @click.prevent="like">Like</a>
+        <a class="card-footer-item" @click.prevent="repost">Repost</a>
+        <a class="card-footer-item" @click.prevent="openReply">Reply</a>
       </footer>
     </div>
     <div class="card" v-if="replying">
@@ -55,12 +58,13 @@
 <script>
   export default {
     name: "Entry",
-    props: ['item'],
+    props: ['item', 'is-main-entry'],
 
     data() {
       return {
         'replying': false,
-        'replyText': ''
+        'replyText': '',
+        'showFooterButtons': true
       }
     },
 
@@ -70,6 +74,9 @@
       },
       openReply() {
         this.replying = true
+      },
+      markRead() {
+        this.$emit('markRead', this.item)
       },
       reply() {
         this.$store.dispatch('micropubPost', {
@@ -98,12 +105,45 @@
             'repost-of': [this.item.url]
           },
         })
-      }
+      },
+      hasRef(key) {
+        if (this.item.hasOwnProperty(key) && this.item.hasOwnProperty('refs')) {
+          if (this.item.refs.hasOwnProperty(this.item[key])) {
+            return true
+          }
+        }
+        return false
+      },
+    },
+
+    mounted() {
+      this.showFooterButtons = this.isMainEntry
     },
 
     computed: {
       classes() {
-        return {'entry': true, 'card': true, 'mb-20': true, 'unread': !this.item._is_read}
+        return {
+          'entry': true,
+          'card': true,
+          'mb-20': this.isMainEntry,
+          'unread': this.isMainEntry && !this.item._is_read
+        }
+      },
+      innerRef() {
+        if (this.isLike) {
+          return this.item.refs[this.item['like-of']]
+        } else if (this.isRepost) {
+          return this.item.refs[this.item['repost-of']]
+        }
+      },
+      isRef() {
+        return this.isLike || this.isRepost
+      },
+      isLike() {
+        return this.hasRef('like-of')
+      },
+      isRepost() {
+        return this.hasRef('repost-of')
       },
       main_content() {
         let content = this.item.content
@@ -171,12 +211,18 @@
 </script>
 
 <style scoped>
-  .entry {
+  .entry.unread {
     border: 1px solid #ccc;
+    border-radius: 3px;
   }
-
   .unread {
     box-shadow: 0 4px 8px 0 rgba(255, 255, 0, 0.8), 0 6px 20px 0 rgba(255, 255, 0, 0.5);
+  }
+  .media .entry {
+    margin-top: 0.75rem;
+  }
+  .media .entry .media {
+    margin-top: 0;
   }
 
   .photos {

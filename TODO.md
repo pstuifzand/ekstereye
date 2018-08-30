@@ -9,7 +9,6 @@
 - Preview
 - Follow, Unfollow feeds
 - Channels create, update, delete
-- References to other posts: "refs"
 - Channel ordering
 - Different interfaces (perhaps Twitter, Mastodon like)
 - Better responsive interface
@@ -24,6 +23,9 @@
 - Micropub
   - Like
   - Repost
+  - Reply
+- Posting
+- References to other posts: "refs" (likes and reposts)
 
 ## Ideas
 

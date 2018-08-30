@@ -15,7 +15,7 @@
     </div>
 
     <div class="timeline--item" v-for="item in items" :key="item.id">
-      <TimelineEntry :item="item" @debug="debug"/>
+      <TimelineEntry :item="item" @debug="debug" @markRead="markRead(channel.uid, ...arguments)" :is-main-entry="true"/>
     </div>
     <div class="level">
       <div class="level-item">
@@ -78,8 +78,11 @@
       prevPage() {
         this.$emit('getPage', {uid: this.channel.uid, before: this.timeline.paging.before})
       },
-      markRead(channel, id) {
-        return this.$store.dispatch('markRead', {channel: channel, entry: id})
+      markRead(channel, item) {
+        return this.$store.dispatch('markRead', {channel: channel, entry: item._id})
+          .then(() => {
+            item._is_read = true
+          })
       }
     },
 
