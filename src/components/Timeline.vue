@@ -6,11 +6,21 @@
           <div class="card-header-title">What are you thinking about?</div>
         </div>
         <div class="card-content">
-          <textarea class="textarea" v-model="newPost"></textarea>
+          <div class="media">
+            <div class="media-content">
+              <div class="field">
+               <div class="control">
+                 <textarea class="textarea" v-model="newPost"></textarea>
+               </div>
+              </div>
+              <div class="field">
+                <div class="control">
+                  <button class="button is-primary" @click="post">Post</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <footer class="card-footer has-buttons">
-          <button class="button is-primary" @click="post">Post</button>
-        </footer>
       </div>
     </div>
 
@@ -96,7 +106,7 @@
             if (child.$props.item && !child.$props.item._is_read) {
               child.$props.item._is_read = true
               let item = child.$props.item
-              this.markRead(this.channel.uid, item._id)
+              this.markRead(this.channel.uid, item)
               count++
             }
           })
@@ -111,7 +121,7 @@
             if (child.$props.item && !child.$props.item._is_read) {
               child.$props.item._is_read = true
               let item = child.$props.item
-              this.markRead(this.channel.uid, item._id).then(() => {
+              this.markRead(this.channel.uid, item).then(() => {
                 this.$store.dispatch('fetchChannels')
               })
             }

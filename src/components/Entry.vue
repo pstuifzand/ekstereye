@@ -10,52 +10,68 @@
       <div class="card-content">
         <div class="media">
           <div class="media-left">
-            <figure class="image is-48x48">
+            <p class="image is-48x48">
               <img :src="author_photo"/>
-            </figure>
+            </p>
           </div>
 
-          <div v-if="isRef">
-            <div><a :href="author_url">{{ author_name }}</a> reposted:</div>
-            <Entry :item="innerRef" :isMainEntry="false"></Entry>
-          </div>
+          <div class="content">
 
-          <div class="content" v-else>
-            <div><a :href="author_url">{{ author_name }}</a></div>
-            <h3 class="title is-6" v-if="item.name" v-text="item.name"></h3>
-            <div class="content" v-html="main_content"></div>
+            <div v-if="isRef">
+              <div><a :href="author_url">{{ author_name }}</a> reposted:</div>
+              <Entry :item="innerRef" :isMainEntry="false"></Entry>
+            </div>
 
-            <div class="photos">
-              <div class="photo" v-for="photo in photo_rest" :key="photo">
-                <img :src="photo" class="image"/>
+            <div v-else>
+              <div><a :href="author_url">{{ author_name }}</a></div>
+
+              <h3 class="title is-6" v-if="item.name" v-text="item.name"></h3>
+              <div class="content" v-html="main_content"></div>
+
+              <div class="photos">
+                <div class="photo" v-for="photo in photo_rest" :key="photo">
+                  <img :src="photo" class="image"/>
+                </div>
               </div>
             </div>
 
-            <a :href="item.url" target="_new">
-              <span class="published" v-html="item.published"></span>
-            </a>
+            <p>
+              <small>
+                <span v-if="showFooterButtons">
+                <a @click="like">Like</a>
+                &middot; <a @click.prevent="openReply">Reply</a>
+                &middot; <a @click.prevent="repost">Repost</a>
+                &middot; <a @click.prevent="debug">Debug</a>
+                &middot;
+                </span><a :href="item.url" target="_new">
+                  <span class="published" v-html="niceTime"></span></a>
+              </small>
+            </p>
+          </div>
+        </div>
+        <div class="media" v-if="replying">
+          <div class="media-content">
+            <div class="field">
+              <label class="label">Write your reply:</label>
+              <div class="control">
+                <textarea class="textarea" v-model="replyText"></textarea>
+              </div>
+            </div>
+            <div class="field">
+              <div class="control">
+                <button class="button is-primary" @click="reply">Reply</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <footer class="card-footer" v-if="showFooterButtons">
-        <a class="card-footer-item" @click.prevent="debug">Debug</a>
-        <a class="card-footer-item" @click.prevent="like">Like</a>
-        <a class="card-footer-item" @click.prevent="repost">Repost</a>
-        <a class="card-footer-item" @click.prevent="openReply">Reply</a>
-      </footer>
-    </div>
-    <div class="card" v-if="replying">
-      <div class="card-content">
-        <textarea class="textarea" v-model="replyText"></textarea>
-      </div>
-      <footer class="card-footer">
-        <a class="card-footer-item" @click="reply">Reply</a>
-      </footer>
     </div>
   </div>
 </template>
 
 <script>
+  import moment from 'moment'
+
   export default {
     name: "Entry",
     props: ['item', 'is-main-entry'],
@@ -121,6 +137,12 @@
     },
 
     computed: {
+      niceTime() {
+        return moment(this.item.published).fromNow()
+      },
+      refNiceTime() {
+        return moment(this.innerRef.published).fromNow()
+      },
       classes() {
         return {
           'entry': true,
@@ -215,12 +237,15 @@
     border: 1px solid #ccc;
     border-radius: 3px;
   }
+
   .unread {
     box-shadow: 0 4px 8px 0 rgba(255, 255, 0, 0.8), 0 6px 20px 0 rgba(255, 255, 0, 0.5);
   }
+
   .media .entry {
     margin-top: 0.75rem;
   }
+
   .media .entry .media {
     margin-top: 0;
   }
