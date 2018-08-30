@@ -1,5 +1,19 @@
 <template>
   <div :class="this.className">
+    <div class="mb-20">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-title">What are you thinking about?</div>
+        </div>
+        <div class="card-content">
+          <textarea class="textarea" v-model="newPost"></textarea>
+        </div>
+        <footer class="card-footer has-buttons">
+          <button class="button is-primary" @click="post">Post</button>
+        </footer>
+      </div>
+    </div>
+
     <div class="timeline--item" v-for="item in items" :key="item.id">
       <TimelineEntry :item="item" @debug="debug"/>
     </div>
@@ -27,7 +41,9 @@
     data() {
       return {
         showDebug: false,
-        debugItem: null
+        debugItem: null,
+        newPost: '',
+        state: 'new'
       }
     },
 
@@ -40,6 +56,16 @@
     },
 
     methods: {
+      post() {
+        this.$store.dispatch('micropubPost', {
+          'type': ['h-entry'],
+          'properties': {
+            'content': [this.newPost]
+          },
+        }).then(() => {
+          this.newPost = '';
+        })
+      },
       debug(item) {
         this.debugItem = item
         this.showDebug = true
