@@ -10,6 +10,7 @@
   "dependencies": {
     "isomorphic-fetch": "^2.2.1",
     "micropub-helper": "^1.4.0",
+    "moment": "^2.22.2",
     "node-sass": "^4.9.3",
     "vue": "^2.5.17",
     "vue-router": "^3.0.1",
