@@ -16,16 +16,17 @@
           </div>
 
           <div class="content">
-
             <div v-if="isRef">
-              <div><a :href="author_url">{{ author_name }}</a> reposted:</div>
-              <Entry :item="innerRef" :isMainEntry="false"></Entry>
+              <div><small><a :href="outside_author_url">{{ outside_author_name }}</a>&nbsp;<span v-text="refText"></span>:</small></div>
             </div>
 
-            <div v-else>
-              <div><a :href="author_url">{{ author_name }}</a></div>
+            <div>
+              <div><a :href="author_url">{{ author_name }}</a>
+                &middot;
+                <a :href="currentItem.url" target="_new"><span class="published" v-html="niceTime"></span></a>
+              </div>
 
-              <h3 class="title is-6" v-if="item.name" v-text="item.name"></h3>
+              <h3 class="title is-6" v-if="currentItem.name" v-text="currentItem.name"></h3>
               <div class="content" v-html="main_content"></div>
 
               <div class="photos">
@@ -42,9 +43,7 @@
                 &middot; <a @click.prevent="openReply">Reply</a>
                 &middot; <a @click.prevent="repost">Repost</a>
                 &middot; <a @click.prevent="debug">Debug</a>
-                &middot;
-                </span><a :href="item.url" target="_new">
-                  <span class="published" v-html="niceTime"></span></a>
+                </span>
               </small>
             </p>
           </div>
@@ -74,7 +73,7 @@
 
   export default {
     name: "Entry",
-    props: ['item', 'is-main-entry'],
+    props: ['item'],
 
     data() {
       return {
@@ -133,12 +132,19 @@
     },
 
     mounted() {
-      this.showFooterButtons = this.isMainEntry
+      this.showFooterButtons = true
     },
 
     computed: {
+      currentItem() {
+        if (this.isRef) {
+          return this.innerRef
+        } else {
+          return this.item
+        }
+      },
       niceTime() {
-        return moment(this.item.published).fromNow()
+        return moment(this.currentItem.published).fromNow()
       },
       refNiceTime() {
         return moment(this.innerRef.published).fromNow()
@@ -167,8 +173,17 @@
       isRepost() {
         return this.hasRef('repost-of')
       },
+      refText() {
+        if (this.isLike) {
+          return 'liked'
+        }
+        if (this.isRepost) {
+          return 'reposted'
+        }
+        return ''
+      },
       main_content() {
-        let content = this.item.content
+        let content = this.currentItem.content
         if (content) {
           if (content.html) {
             return content.html
@@ -177,7 +192,7 @@
           }
           return content
         }
-        content = this.item.summary
+        content = this.currentItem.summary
         if (content) {
           if (content.html) {
             return content.html
@@ -188,18 +203,18 @@
         }
       },
       photo_first() {
-        if (this.item.photo && this.item.photo.length >= 1) {
-          return this.item.photo[0]
+        if (this.currentItem.photo && this.currentItem.photo.length >= 1) {
+          return this.currentItem.photo[0]
         }
         return false
       },
       photo_rest() {
-        if (this.item.photo && this.item.photo.length > 1) {
-          return this.item.photo.slice(1)
+        if (this.currentItem.photo && this.currentItem.photo.length > 1) {
+          return this.currentItem.photo.slice(1)
         }
         return []
       },
-      author_name() {
+      outside_author_name() {
         if (!this.item.author) {
           return 'anonymouse';
         }
@@ -210,7 +225,7 @@
         }
         return this.item.author.name
       },
-      author_url() {
+      outside_author_url() {
         if (!this.item.author) {
           return '';
         }
@@ -219,14 +234,34 @@
         }
         return this.item.author.url
       },
+      author_name() {
+        if (!this.currentItem.author) {
+          return 'anonymouse';
+        }
+        if (!this.currentItem.author.name) {
+          if (this.currentItem.author.url) {
+            return new URL(this.currentItem.author.url).hostname
+          }
+        }
+        return this.currentItem.author.name
+      },
+      author_url() {
+        if (!this.currentItem.author) {
+          return '';
+        }
+        if (!this.currentItem.author.url) {
+          return '';
+        }
+        return this.currentItem.author.url
+      },
       author_photo() {
-        if (!this.item.author) {
+        if (!this.currentItem.author) {
           return '';
         }
-        if (!this.item.author.photo) {
+        if (!this.currentItem.author.photo) {
           return '';
         }
-        return this.item.author.photo
+        return this.currentItem.author.photo
       }
     }
   }
