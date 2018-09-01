@@ -59,11 +59,8 @@
           .then(() => {
             item._is_read = true
           })
-      }
-    },
-
-    mounted() {
-      window.onscroll = () => {
+      },
+      handleScroll() {
         // let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
         let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === this.$el.offsetHeight + document.documentElement.offsetHeight + 20;
         if (bottomOfWindow) {
@@ -94,6 +91,14 @@
           }
         })
       }
+    },
+
+    created() {
+      window.addEventListener('scroll', this.handleScroll);
+    },
+
+    destroyed() {
+      window.removeEventListener('scroll', this.handleScroll);
     }
   }
 </script>
