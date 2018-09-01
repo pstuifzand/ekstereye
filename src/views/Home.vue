@@ -9,12 +9,12 @@
     <div class="timeline">
       <button class="button" @click="openFeedFollower">Add feed</button>
       <new-post class="mt-20"></new-post>
-      <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="this.$store.state.channel"
-                @getPage="getPage"></Timeline>
+      <h1>{{ channel.name }}</h1>
+      <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="channel" @getPage="getPage"></Timeline>
     </div>
 
     <channel-creator :is-open="this.$store.state.channelCreatorIsOpen"></channel-creator>
-    <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower"></feed-follower>
+    <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower" :channel="channel"></feed-follower>
   </div>
 </template>
 
@@ -39,13 +39,16 @@
 
     data() {
       return {
-        feedFollowerIsOpen: false
+        feedFollowerIsOpen: false,
       }
     },
 
     computed: {
       uid() {
         return this.$route.params.uid || 'home';
+      },
+      channel() {
+        return this.$store.state.channel
       }
     },
 

@@ -31,4 +31,6 @@
 
 ### Integrated post interface at the top of the timeline
 
+Implemented, but perhaps needs automatic destination chooser.
+
 

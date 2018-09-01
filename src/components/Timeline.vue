@@ -17,8 +17,8 @@
 </template>
 
 <script>
-  import TimelineEntry from '@/components/Entry'
-  import DebugModal from '@/components/DebugModal'
+  import TimelineEntry from '../components/Entry'
+  import DebugModal from '../components/DebugModal'
 
   export default {
     name: "Timeline",

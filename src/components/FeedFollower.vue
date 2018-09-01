@@ -3,7 +3,7 @@
     <div class="modal-background"></div>
     <div class="modal-card">
       <header class="modal-card-head">
-        <p class="modal-card-title">Add feed to channel</p>
+        <p class="modal-card-title">Add feed to {{ channel.name }}</p>
         <button class="delete" aria-label="close" @click="close"></button>
       </header>
 
@@ -19,7 +19,7 @@
         </div>
 
         <div class="results">
-          <feed-chooser :feed="feed" @showFeed="showFeed(feed)" v-for="(feed, i) in feeds" :key="i"/>
+          <feed-chooser :feed="feed" @showFeed="showFeed(feed)" @addFeed="addFeed(feed)" v-for="(feed, i) in feeds" :key="i"/>
         </div>
 
         <Timeline class="timeline" :timeline="timeline" :channel="channel"></Timeline>
@@ -38,13 +38,12 @@
   export default {
     name: "FeedFollower",
     components: {FeedChooser, Timeline},
-    props: ['isOpen'],
+    props: ['isOpen', 'channel'],
 
     data() {
       return {
         feeds: [],
         timeline: {items: [], paging: {}},
-        channel: {},
         query: '',
         loading: false
       }
@@ -74,7 +73,6 @@
       close() {
         this.feeds = []
         this.timeline = {items: [], paging: {}}
-        this.channel = {}
         this.query = ''
         this.loading = false
 
@@ -91,9 +89,15 @@
         }).then((res) => {
           return res.json()
         }).then((res) => {
+          if (!res.results) {
+            this.loading = false
+            return
+          }
+
           res.results.forEach(item => {
             item.loading = false
           })
+
           this.feeds = res.results
           this.loading = false
         })
@@ -109,9 +113,19 @@
         }).then((res) => {
           return res.json()
         }).then((res) => {
-          this.channel = feed
           this.timeline = res
           feed.loading = false
+        })
+      },
+      addFeed(feed) {
+        let url = this.$store.state.microsubEndpoint + '?action=follow&channel='+this.channel.uid+'&url=' + encodeURIComponent(feed.url)
+        return fetch(url, {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + this.$store.state.access_token
+          }
+        }).then(() => {
+          this.$store.dispatch('fetchTimeline', this.channel)
         })
       }
     }
@@ -121,8 +135,9 @@
 <style scoped>
 
   .results {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 52px auto auto auto;
+    grid-gap: 6px;
   }
 
 </style>
