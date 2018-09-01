@@ -153,8 +153,8 @@
         return {
           'entry': true,
           'card': true,
-          'mb-20': this.isMainEntry,
-          'unread': this.isMainEntry && !this.item._is_read
+          'mb-20': true,
+          'unread': !this.item._is_read
         }
       },
       innerRef() {
