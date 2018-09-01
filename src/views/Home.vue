@@ -8,6 +8,8 @@
 
     <Timeline class="timeline" :timeline="this.$store.state.timeline" :channel="this.$store.state.channel"
               @getPage="getPage"></Timeline>
+
+    <channel-creator :is-open="this.$store.state.channelCreatorIsOpen"></channel-creator>
   </div>
 </template>
 
@@ -16,13 +18,15 @@
   import Timeline from '@/components/Timeline.vue'
   import Channels from '@/components/Channels.vue'
   import Channel from '@/components/Channel.vue'
+  import ChannelCreator from '@/components/ChannelCreator.vue'
 
   export default {
     name: 'home',
     components: {
       Timeline,
       Channels,
-      Channel
+      Channel,
+      ChannelCreator
     },
 
     computed: {

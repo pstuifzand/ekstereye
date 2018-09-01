@@ -13,7 +13,8 @@ export default new Vuex.Store({
       debug: false,
       logged_in: false,
       micropubEndpoint: '',
-      microsubEndpoint: ''
+      microsubEndpoint: '',
+      channelCreatorIsOpen: false
     };
     let loginData = JSON.parse(window.localStorage.getItem('login_data'))
     if (loginData) {
@@ -47,6 +48,9 @@ export default new Vuex.Store({
         items: [],
         paging: {}
       }
+    },
+    setChannelCreatorState(state, open) {
+      state.channelCreatorIsOpen = open
     }
   },
 
@@ -118,6 +122,23 @@ export default new Vuex.Store({
         'properties': {
           'like-of': [url]
         }
+      })
+    },
+    openChannelCreator({commit}) {
+      commit('setChannelCreatorState', true)
+    },
+    closeChannelCreator({commit}) {
+      commit('setChannelCreatorState', false)
+    },
+    createChannel(x, name) {
+      let url = this.state.microsubEndpoint + '?action=channels&name=' + encodeURIComponent(name)
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + this.state.access_token
+        }
+      }).then(() => {
+        this.dispatch('fetchChannels')
       })
     }
   }
