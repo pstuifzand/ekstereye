@@ -1,31 +1,8 @@
 <template>
   <div :class="this.className">
-    <div class="mb-20">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-header-title">What are you thinking about?</div>
-        </div>
-        <div class="card-content">
-          <div class="media">
-            <div class="media-content">
-              <div class="field">
-               <div class="control">
-                 <textarea class="textarea" v-model="newPost"></textarea>
-               </div>
-              </div>
-              <div class="field">
-                <div class="control">
-                  <button class="button is-primary" @click="post">Post</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="timeline--item" v-for="item in items" :key="item.id">
-      <TimelineEntry :item="item" @debug="debug" @markRead="markRead(channel.uid, ...arguments)" :is-main-entry="true"/>
+      <TimelineEntry :item="item" @debug="debug" @markRead="markRead(channel.uid, ...arguments)"
+                     :is-main-entry="true"/>
     </div>
     <div class="level">
       <div class="level-item">
@@ -52,7 +29,6 @@
       return {
         showDebug: false,
         debugItem: null,
-        newPost: '',
         state: 'new'
       }
     },
@@ -66,16 +42,6 @@
     },
 
     methods: {
-      post() {
-        this.$store.dispatch('micropubPost', {
-          'type': ['h-entry'],
-          'properties': {
-            'content': [this.newPost]
-          },
-        }).then(() => {
-          this.newPost = '';
-        })
-      },
       debug(item) {
         this.debugItem = item
         this.showDebug = true
@@ -136,8 +102,9 @@
   .timeline--item {
     margin-bottom: 16px;
   }
+
   .has-buttons {
     justify-content: end;
-    padding:12px;
+    padding: 12px;
   }
 </style>

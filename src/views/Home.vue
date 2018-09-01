@@ -6,27 +6,41 @@
       </div>
     </Channels>
 
-    <Timeline class="timeline" :timeline="this.$store.state.timeline" :channel="this.$store.state.channel"
-              @getPage="getPage"></Timeline>
+    <div class="timeline">
+      <button class="button" @click="openFeedFollower">Add feed</button>
+      <new-post class="mt-20"></new-post>
+      <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="this.$store.state.channel"
+                @getPage="getPage"></Timeline>
+    </div>
 
     <channel-creator :is-open="this.$store.state.channelCreatorIsOpen"></channel-creator>
+    <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower"></feed-follower>
   </div>
 </template>
 
 <script>
-  // @ is an alias to /src
-  import Timeline from '@/components/Timeline.vue'
-  import Channels from '@/components/Channels.vue'
-  import Channel from '@/components/Channel.vue'
-  import ChannelCreator from '@/components/ChannelCreator.vue'
+  import Timeline from '../components/Timeline.vue'
+  import Channels from '../components/Channels.vue'
+  import Channel from '../components/Channel.vue'
+  import ChannelCreator from '../components/ChannelCreator.vue'
+  import FeedFollower from "../components/FeedFollower"
+  import NewPost from "../components/NewPost"
 
   export default {
     name: 'home',
     components: {
+      FeedFollower,
       Timeline,
       Channels,
       Channel,
-      ChannelCreator
+      ChannelCreator,
+      NewPost
+    },
+
+    data() {
+      return {
+        feedFollowerIsOpen: false
+      }
     },
 
     computed: {
@@ -36,6 +50,12 @@
     },
 
     methods: {
+      openFeedFollower() {
+        this.feedFollowerIsOpen = true
+      },
+      closeFeedFollower() {
+        this.feedFollowerIsOpen = false
+      },
       selectChannel(channel) {
         this.$store.dispatch('switchChannel', channel).then(() => {
           this.$store.dispatch('fetchTimeline', channel).then(() => {
