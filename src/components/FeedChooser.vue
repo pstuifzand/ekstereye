@@ -2,8 +2,8 @@
   <div class="result">
     <div class="image is-48x48"><img :src="feed.photo" alt="" class="feed-icon"/></div>
     <div class="feed-name" v-text="feed.name"></div>
-    <button :class="buttonClasses" @click="showFeed">Show feed</button>
-    <button :class="buttonClasses" @click="addFeed">Add feed</button>
+    <button :class="buttonClasses" @click="showFeed">Preview</button>
+    <button :class="buttonClasses" @click="addFeed">Follow</button>
   </div>
 </template>
 <script>
