@@ -97,7 +97,7 @@
         this.$store.dispatch('micropubPost', {
           'type': ['h-entry'],
           'properties': {
-            'in-reply-to': [this.item.url],
+            'in-reply-to': [this.currentItem.url],
             'content': [this.replyText]
           },
         }).then(() => {
@@ -109,7 +109,7 @@
         this.$store.dispatch('micropubPost', {
           'type': ['h-entry'],
           'properties': {
-            'like-of': [this.item.url]
+            'like-of': [this.currentItem.url]
           },
         })
       },
@@ -117,7 +117,7 @@
         this.$store.dispatch('micropubPost', {
           'type': ['h-entry'],
           'properties': {
-            'repost-of': [this.item.url]
+            'repost-of': [this.currentItem.url]
           },
         })
       },
