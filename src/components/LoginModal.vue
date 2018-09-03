@@ -26,7 +26,7 @@
 <script>
   import Micropub from 'micropub-helper';
   import helper from '@/helpers';
-  import relScraper from '@/helpers/rel-scraper'
+  import relScraper from 'rel-scraper'
 
   const CLIENT_ID = 'https://p83.nl/'
 
