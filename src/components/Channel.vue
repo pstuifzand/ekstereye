@@ -1,21 +1,16 @@
 <template>
   <div class="channel--name" @click="select(channel)">
-    {{ channel.name }} <span :class="{ tag: true, 'is-success': channel.unread > 0}">{{ channel.unread }}</span>
+    <router-link :to='"/channel/" + channel.uid'>
+      {{ channel.name }}
+      <span :class="{ tag: true, 'is-success': channel.unread > 0}">{{ channel.unread }}</span>
+    </router-link>
   </div>
 </template>
 
 <script>
   export default {
     name: "Channel",
-
-    props: ['channel'],
-
-    methods: {
-      select(channel) {
-        this.$emit('channel-selected', channel)
-      }
-    }
-
+    props: ['channel']
   }
 </script>
 
