@@ -79,7 +79,9 @@
     watch: {
       '$route'(to, from) {
         this.$store.dispatch('fetchChannels')
-        this.$store.dispatch('fetchTimeline', {uid: to.params.uid})
+        this.$store.dispatch('fetchTimeline', {uid: to.params.uid}).then(() => {
+          window.scrollTo({top: 0})
+        })
       }
     },
 
