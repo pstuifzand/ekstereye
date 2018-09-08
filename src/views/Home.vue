@@ -10,7 +10,8 @@
       <button class="button" @click="openFeedFollower">Add feed</button>
       <new-post class="mt-20"></new-post>
       <h1>{{ channel.name }}</h1>
-      <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="channel" @getPage="getPage"></Timeline>
+      <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="channel"
+                @getPage="getPage"></Timeline>
     </div>
 
     <div class="column"></div>
@@ -72,6 +73,13 @@
         this.$store.dispatch('fetchTimeline', next).then(() => {
           window.scrollTo({top: 0})
         })
+      }
+    },
+
+    watch: {
+      '$route'(to, from) {
+        this.$store.dispatch('fetchChannels')
+        this.$store.dispatch('fetchTimeline', {uid: to.params.uid})
       }
     },
 

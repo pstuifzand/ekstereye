@@ -1,5 +1,5 @@
 <template>
-  <div class="channel--name" @click="select(channel)">
+  <div class="channel--name">
     <router-link :to='"/channel/" + channel.uid'>
       {{ channel.name }}
       <span :class="{ tag: true, 'is-success': channel.unread > 0}">{{ channel.unread }}</span>
