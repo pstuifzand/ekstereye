@@ -140,6 +140,19 @@ export default new Vuex.Store({
       }).then(() => {
         this.dispatch('fetchChannels')
       })
+    },
+    bottomReached() {
+      let count = 0
+      this.state.timeline.items.forEach((item) => {
+        if (item && !item._is_read) {
+          item._is_read = true
+          this.dispatch('markRead', {channel: this.state.channel.uid, entry: item._id})
+          count++;
+        }
+      })
+      if (count > 0) {
+        this.dispatch('fetchChannels')
+      }
     }
   }
 })

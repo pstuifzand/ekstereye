@@ -36,7 +36,7 @@
     computed: {
       items() {
         return this.timeline.items.filter((item) => {
-          return item.type === 'entry';
+          return item.type === 'entry' || item.type === 'cite';
         })
       }
     },
@@ -62,20 +62,12 @@
       },
       handleScroll() {
         // let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
-        let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === this.$el.offsetHeight + document.documentElement.offsetHeight + 20;
+        let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === this.$el.offsetHeight + document.documentElement.offsetHeight + 12
+        // eslint-disable-next-line
+        console.log(document.documentElement.scrollTop + window.innerHeight, this.$el.offsetHeight + document.documentElement.offsetHeight + 12)
         if (bottomOfWindow) {
-          let count = 0
-          this.$children.forEach((child) => {
-            if (child.$props.item && !child.$props.item._is_read) {
-              child.$props.item._is_read = true
-              let item = child.$props.item
-              this.markRead(this.channel.uid, item)
-              count++
-            }
-          })
-          if (count > 0) {
-            this.$store.dispatch('fetchChannels')
-          }
+          this.$store.dispatch('bottomReached')
+          return
         }
 
         this.$children.forEach((child) => {
@@ -97,7 +89,7 @@
       window.addEventListener('scroll', this.handleScroll);
     },
 
-    destroyed() {
+    beforeDestroy() {
       window.removeEventListener('scroll', this.handleScroll);
     }
   }
