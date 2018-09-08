@@ -63,8 +63,6 @@
       handleScroll() {
         // let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
         let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === this.$el.offsetHeight + document.documentElement.offsetHeight + 12
-        // eslint-disable-next-line
-        console.log(document.documentElement.scrollTop + window.innerHeight, this.$el.offsetHeight + document.documentElement.offsetHeight + 12)
         if (bottomOfWindow) {
           this.$store.dispatch('bottomReached')
           return
