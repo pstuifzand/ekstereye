@@ -1,17 +1,19 @@
 <template>
-  <div class="home">
-    <Channels class="channels" :channels="this.$store.state.channels">
+  <div class="home columns">
+    <Channels class="channels column" :channels="this.$store.state.channels">
       <div slot-scope="{ channel }">
         <Channel :channel="channel" @channel-selected="selectChannel"></Channel>
       </div>
     </Channels>
 
-    <div class="timeline">
+    <div class="timeline column is-three-fifths">
       <button class="button" @click="openFeedFollower">Add feed</button>
       <new-post class="mt-20"></new-post>
       <h1>{{ channel.name }}</h1>
       <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="channel" @getPage="getPage"></Timeline>
     </div>
+
+    <div class="column"></div>
 
     <channel-creator :is-open="this.$store.state.channelCreatorIsOpen"></channel-creator>
     <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower" :channel="channel"></feed-follower>
@@ -85,18 +87,13 @@
 <style scoped>
   .timeline {
     margin-top: 20px;
-    width: 600px;
-    position: absolute;
-    left: 270px;
-
     padding-bottom: 100px;
   }
 
   .channels {
-    position: fixed;
-    top: 52px;
-    height: calc(100vh - 52px);
-    width: 250px;
+    position: sticky;
+    top: 40px;
+    max-height: calc(100vh - 40px);
     overflow-y: scroll;
     overflow-x: hidden;
     padding-bottom: 100px;
