@@ -78,6 +78,9 @@
 
     watch: {
       '$route'(to, from) {
+        if (to === from) {
+          this.$forceUpdate()
+        }
         this.$store.dispatch('fetchChannels')
         this.$store.dispatch('fetchTimeline', {uid: to.params.uid}).then(() => {
           window.scrollTo({top: 0})

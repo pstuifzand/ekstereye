@@ -54,6 +54,10 @@ export default new Vuex.Store({
     setChannelCreatorState(state, open) {
       state.channelCreatorIsOpen = open
     },
+    newEndpoints(state, endpoints) {
+      state.micropubEndpoint = endpoints.micropubEndpoint
+      state.microsubEndpoint = endpoints.microsubEndpoint
+    },
     createEventSource(state, url) {
       state.eventSource = new EventSource(state.microsubEndpoint + url, {
         headers: {
