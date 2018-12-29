@@ -11,9 +11,19 @@
               <textarea class="textarea" v-model="newPost"></textarea>
             </div>
           </div>
-          <div class="field">
-            <div class="control">
-              <button class="button is-primary" @click="post">Post</button>
+          <div class="level">
+            <div class="level-left">
+              <div class="level-item">
+                <div class="field">
+                  <div class="control">
+                    <button class="button is-primary" @click="post">Post</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="level-right">
+              <div class="level-item">
+              </div>
             </div>
           </div>
         </div>
@@ -27,7 +37,8 @@
     name: "NewPost",
     data() {
       return {
-        newPost: ''
+        newPost: '',
+        tags: [{name:"twitter"},{name:"instagram"}]
       }
     },
     methods: {

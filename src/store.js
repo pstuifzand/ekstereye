@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import Micropub from 'micropub-helper';
+import EventSource from 'eventsource'
 
 Vue.use(Vuex)
 
@@ -13,8 +14,9 @@ export default new Vuex.Store({
       debug: false,
       logged_in: false,
       micropubEndpoint: '',
-      microsubEndpoint: '',
-      channelCreatorIsOpen: false
+      microsubEndpoint: '/microsub',
+      channelCreatorIsOpen: false,
+      eventSource: null
     };
     let loginData = JSON.parse(window.localStorage.getItem('login_data'))
     if (loginData) {
@@ -51,6 +53,29 @@ export default new Vuex.Store({
     },
     setChannelCreatorState(state, open) {
       state.channelCreatorIsOpen = open
+    },
+    createEventSource(state, url) {
+      state.eventSource = new EventSource(state.microsubEndpoint + url, {
+        headers: {
+          'Authorization': 'Bearer ' + this.state.access_token
+        }
+      })
+      state.eventSource.addEventListener('open', evt => {
+        // eslint-disable-next-line
+        console.log(evt)
+      })
+      state.eventSource.addEventListener('ping', evt => {
+        // eslint-disable-next-line
+        console.log(evt)
+      })
+      state.eventSource.addEventListener('message', evt => {
+        // eslint-disable-next-line
+        console.log(evt)
+      })
+      state.eventSource.addEventListener('error', evt => {
+        // eslint-disable-next-line
+        console.log(evt)
+      })
     }
   },
 
@@ -153,6 +178,9 @@ export default new Vuex.Store({
       if (count > 0) {
         this.dispatch('fetchChannels')
       }
+    },
+    startEventListening({commit}, url) {
+      commit('createEventSource', url)
     }
   }
 })
