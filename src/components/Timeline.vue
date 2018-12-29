@@ -62,7 +62,7 @@
       },
       handleScroll() {
         // let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
-        let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === this.$el.offsetHeight + document.documentElement.offsetHeight + 12
+        let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight >= this.$el.offsetHeight + document.documentElement.offsetHeight
         if (bottomOfWindow) {
           this.$store.dispatch('bottomReached')
           return
