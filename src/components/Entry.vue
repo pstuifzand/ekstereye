@@ -270,12 +270,7 @@
 
 <style scoped>
   .entry.unread {
-    border: 1px solid #ccc;
-    border-radius: 3px;
-  }
-
-  .unread {
-    box-shadow: 0 4px 8px 0 rgba(255, 255, 0, 0.8), 0 6px 20px 0 rgba(255, 255, 0, 0.5);
+    outline: 1px solid #ccc;
   }
 
   .media .entry {
