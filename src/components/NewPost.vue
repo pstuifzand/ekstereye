@@ -50,6 +50,7 @@
           },
         }).then(() => {
           this.newPost = '';
+          this.$emit('close')
         })
       },
     }

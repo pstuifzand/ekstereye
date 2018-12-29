@@ -7,9 +7,20 @@
     </Channels>
 
     <div class="timeline column is-three-fifths">
-      <button class="button" @click="openFeedFollower">Add feed</button>
-      <new-post class="mt-20"></new-post>
-      <h1 class="title is-5 mt-20">{{ channel.name }}</h1>
+      <div class="level">
+        <div class="level-left">
+          <h1 class="title is-5">{{ channel.name }}</h1>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <button class="button" @click.prevent="openPost">New Post</button>
+          </div>
+          <div class="level-item">
+            <button class="button" @click.prevent="openFeedFollower('')">Add feed</button>
+          </div>
+        </div>
+      </div>
+      <new-post class="mt-20" v-if="showPost" @close="showPost = false"></new-post>
       <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="channel"
                 @getPage="getPage" @followFeed="openFeedFollower(arguments[0])"></Timeline>
     </div>
@@ -43,7 +54,8 @@
     data() {
       return {
         feedFollowerIsOpen: false,
-        feedFollowerQuery: ''
+        feedFollowerQuery: '',
+        showPost: false
       }
     },
 
@@ -58,8 +70,6 @@
 
     methods: {
       openFeedFollower(query) {
-        // eslint-disable-next-line
-        console.log(query)
         this.feedFollowerIsOpen = true
         this.feedFollowerQuery = query
       },
@@ -77,6 +87,9 @@
         this.$store.dispatch('fetchTimeline', next).then(() => {
           window.scrollTo({top: 0})
         })
+      },
+      openPost() {
+        this.showPost = true
       }
     },
 
