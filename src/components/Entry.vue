@@ -24,6 +24,8 @@
               <div><a :href="author_url">{{ author_name }}</a>
                 &middot;
                 <a :href="currentItem.url" target="_new"><span class="published" v-html="niceTime"></span></a>
+                &middot;
+                <button class="button is-small" @click="$emit('followFeed', author_url)">Follow</button>
               </div>
 
               <h3 class="title is-6" v-if="currentItem.name" v-text="currentItem.name"></h3>

@@ -11,13 +11,13 @@
       <new-post class="mt-20"></new-post>
       <h1 class="title is-5 mt-20">{{ channel.name }}</h1>
       <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="channel"
-                @getPage="getPage"></Timeline>
+                @getPage="getPage" @followFeed="openFeedFollower(arguments[0])"></Timeline>
     </div>
 
     <div class="column"></div>
 
     <channel-creator :is-open="this.$store.state.channelCreatorIsOpen"></channel-creator>
-    <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower" :channel="channel"></feed-follower>
+    <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower" :channel="channel" :initial-query="feedFollowerQuery"></feed-follower>
   </div>
 </template>
 
@@ -43,6 +43,7 @@
     data() {
       return {
         feedFollowerIsOpen: false,
+        feedFollowerQuery: ''
       }
     },
 
@@ -56,8 +57,11 @@
     },
 
     methods: {
-      openFeedFollower() {
+      openFeedFollower(query) {
+        // eslint-disable-next-line
+        console.log(query)
         this.feedFollowerIsOpen = true
+        this.feedFollowerQuery = query
       },
       closeFeedFollower() {
         this.feedFollowerIsOpen = false

@@ -38,7 +38,7 @@
   export default {
     name: "FeedFollower",
     components: {FeedChooser, Timeline},
-    props: ['isOpen', 'channel'],
+    props: ['isOpen', 'channel', 'initialQuery'],
 
     data() {
       return {
@@ -62,6 +62,8 @@
       // eslint-disable-next-line no-unused-vars
       isOpen(newVal, oldVal) {
         if (newVal) {
+          this.query = this.initialQuery
+
           this.$nextTick(function () {
             this.$refs.query.focus()
           })

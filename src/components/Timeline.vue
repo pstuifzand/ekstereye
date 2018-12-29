@@ -1,7 +1,7 @@
 <template>
   <div :class="this.className">
     <div class="timeline--item" v-for="item in items" :key="item.id">
-      <TimelineEntry :item="item" @debug="debug" @markRead="markRead(channel.uid, ...arguments)"
+      <TimelineEntry :item="item" @debug="debug" @markRead="markRead(channel.uid, ...arguments)" @followFeed="$emit('followFeed', arguments[0])"
                      :is-main-entry="true"/>
     </div>
     <div class="level">
