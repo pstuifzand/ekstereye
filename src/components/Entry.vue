@@ -24,8 +24,6 @@
               <div><a :href="author_url">{{ author_name }}</a>
                 &middot;
                 <a :href="currentItem.url" target="_new"><span class="published" v-html="niceTime"></span></a>
-                &middot;
-                <button class="button is-small" @click="$emit('followFeed', author_url)">Follow</button>
               </div>
 
               <h3 class="title is-6" v-if="currentItem.name" v-text="currentItem.name"></h3>
@@ -44,6 +42,7 @@
                 <a @click="like">Like</a>
                 &middot; <a @click.prevent="openReply">Reply</a>
                 &middot; <a @click.prevent="repost">Repost</a>
+                &middot; <a @click.prevent="$emit('followFeed', author_url)" title="Try to follow the feed this item comes from">Follow</a>
                 &middot; <a @click.prevent="debug">Debug</a>
                 </span>
               </small>
