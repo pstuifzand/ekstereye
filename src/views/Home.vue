@@ -17,7 +17,7 @@
     <div class="column"></div>
 
     <channel-creator :is-open="this.$store.state.channelCreatorIsOpen"></channel-creator>
-    <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower" :channel="channel" :initial-query="feedFollowerQuery"></feed-follower>
+    <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower" :initial-channel="channel" :initial-query="feedFollowerQuery"></feed-follower>
   </div>
 </template>
 

@@ -18,6 +18,14 @@
           </div>
         </div>
 
+        <div class="channels">
+          <div class="select">
+            <select class="select" v-model="channel">
+              <option :value="ch" v-text="ch.name" :key="ch.uid" v-for="ch in channels"></option>
+            </select>
+          </div>
+        </div>
+
         <div class="results">
           <feed-chooser :feed="feed" @showFeed="showFeed(feed)" @addFeed="addFeed(feed)" v-for="(feed, i) in feeds" :key="i"/>
         </div>
@@ -38,10 +46,11 @@
   export default {
     name: "FeedFollower",
     components: {FeedChooser, Timeline},
-    props: ['isOpen', 'channel', 'initialQuery'],
+    props: ['isOpen', 'initialChannel', 'initialQuery'],
 
     data() {
       return {
+        channel: {},
         feeds: [],
         timeline: {items: [], paging: {}},
         query: '',
@@ -55,6 +64,9 @@
       },
       searchClasses() {
         return {'button': true, 'is-primary': true, 'is-loading': this.loading}
+      },
+      channels() {
+        return this.$store.state.channels
       }
     },
 
@@ -63,6 +75,7 @@
       isOpen(newVal, oldVal) {
         if (newVal) {
           this.query = this.initialQuery
+          this.channel = this.initialChannel
 
           this.$nextTick(function () {
             this.$refs.query.focus()
