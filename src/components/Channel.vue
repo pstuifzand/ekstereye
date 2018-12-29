@@ -19,8 +19,4 @@
     cursor: pointer;
     padding: 8px;
   }
-  .channel--name:hover {
-    background: aliceblue;
-    color: black;
-  }
 </style>
