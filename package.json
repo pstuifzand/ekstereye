@@ -16,7 +16,8 @@
     "rel-scraper": "github:grantcodes/rel-scraper",
     "vue": "^2.5.17",
     "vue-router": "^3.0.1",
-    "vuex": "^3.0.1"
+    "vuex": "^3.0.1",
+    "lodash": "latest"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.0-rc.10",

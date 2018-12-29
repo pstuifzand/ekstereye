@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import Micropub from 'micropub-helper';
 import EventSource from 'eventsource'
+import _ from "lodash"
 
 Vue.use(Vuex)
 
@@ -35,6 +36,8 @@ export default new Vuex.Store({
       state.channels = channels
     },
     newTimeline(state, {channel, timeline}) {
+      // find the channel matching the selected uid
+      channel = _.find(state.channels, item => item.uid === channel.uid)
       state.channel = channel
       state.timeline = timeline
     },

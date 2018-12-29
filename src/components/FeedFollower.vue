@@ -118,6 +118,7 @@
         })
       },
       addFeed(feed) {
+        feed.loading = true
         let url = this.$store.state.microsubEndpoint + '?action=follow&channel='+this.channel.uid+'&url=' + encodeURIComponent(feed.url)
         return fetch(url, {
           method: 'POST',
@@ -125,6 +126,7 @@
             'Authorization': 'Bearer ' + this.$store.state.access_token
           }
         }).then(() => {
+          feed.loading = false
           this.$store.dispatch('fetchTimeline', this.channel)
         })
       }

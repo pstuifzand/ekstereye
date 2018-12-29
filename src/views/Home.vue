@@ -9,7 +9,7 @@
     <div class="timeline column is-three-fifths">
       <button class="button" @click="openFeedFollower">Add feed</button>
       <new-post class="mt-20"></new-post>
-      <h1>{{ channel.name }}</h1>
+      <h1 class="title is-5 mt-20">{{ channel.name }}</h1>
       <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="channel"
                 @getPage="getPage"></Timeline>
     </div>
