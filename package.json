@@ -8,21 +8,22 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "bulma": "^0.7.5",
     "event-source-polyfill": "0.0.16",
     "isomorphic-fetch": "^2.2.1",
+    "lodash": "latest",
     "micropub-helper": "^1.4.0",
     "moment": "^2.22.2",
     "node-sass": "^4.9.3",
     "rel-scraper": "github:grantcodes/rel-scraper",
     "vue": "^2.5.17",
     "vue-router": "^3.0.1",
-    "vuex": "^3.0.1",
-    "lodash": "latest"
+    "vuex": "^3.0.1"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.0.0-rc.10",
+    "@vue/cli-plugin-babel": "^3.10.0",
     "@vue/cli-plugin-eslint": "^3.0.0-rc.10",
-    "@vue/cli-service": "^3.0.0-rc.10",
+    "@vue/cli-service": "^3.10.0",
     "vue-template-compiler": "^2.5.17"
   },
   "eslintConfig": {
