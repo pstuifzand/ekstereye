@@ -270,7 +270,7 @@
 
 <style scoped>
   .entry.unread {
-    outline: 1px solid #ccc;
+    border-color: #555;
   }
 
   .media .entry {
