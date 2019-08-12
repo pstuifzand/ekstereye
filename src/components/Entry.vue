@@ -27,7 +27,7 @@
               </div>
 
               <h3 class="title is-6" v-if="currentItem.name" v-text="currentItem.name"></h3>
-              <div class="content" v-html="main_content"></div>
+              <div class="content is-pre" v-html="main_content"></div>
 
               <div class="photos">
                 <div class="photo" v-for="photo in photo_rest" :key="photo">
@@ -285,5 +285,8 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-gap: 4px;
+  }
+  .is-pre {
+    white-space: pre-wrap;
   }
 </style>
