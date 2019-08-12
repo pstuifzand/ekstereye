@@ -175,15 +175,20 @@ export default new Vuex.Store({
     },
     bottomReached() {
       let count = 0
-      this.state.timeline.items.forEach((item) => {
+      let uids = []
+      let items = this.state.timeline.items
+      uids = _.map(_.filter(items, item => !item._is_read), item => item._id)
+      items.forEach((item) => {
         if (item && !item._is_read) {
           item._is_read = true
-          this.dispatch('markRead', {channel: this.state.channel.uid, entry: item._id})
           count++;
         }
       })
       if (count > 0) {
-        this.dispatch('fetchChannels')
+        this.dispatch('markRead', {channel: this.state.channel.uid, 'entry[]': uids})
+          .then(() => {
+            this.dispatch('fetchChannels')
+          })
       }
     },
     startEventListening({commit}, url) {

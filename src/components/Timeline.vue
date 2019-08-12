@@ -58,6 +58,8 @@
         return this.$store.dispatch('markRead', {channel: channel, entry: item._id})
           .then(() => {
             item._is_read = true
+          }).then(() => {
+            this.$store.dispatch('fetchChannels')
           })
       },
       handleScroll() {
