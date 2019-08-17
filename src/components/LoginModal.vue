@@ -28,7 +28,7 @@
   import helper from '@/helpers';
   import relScraper from 'rel-scraper'
 
-  const CLIENT_ID = 'https://p83.nl/'
+  const CLIENT_ID = 'https://reader.p83.nl/'
 
   export default {
     name: "LoginModal",
