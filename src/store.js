@@ -93,10 +93,7 @@ export default new Vuex.Store({
       state.eventSource.addEventListener('new item in channel', evt => {
         // eslint-disable-next-line
         console.log(evt)
-
         let d = JSON.parse(evt.data)
-        // eslint-disable-next-line
-        console.log(d, state.channels)
         let channel = _.find(state.channels, item => item.uid === d.uid)
         if (channel) {
           channel.unread = d.unread
