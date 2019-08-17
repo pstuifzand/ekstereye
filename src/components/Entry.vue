@@ -145,7 +145,7 @@
         }
       },
       niceTime() {
-        return moment(this.currentItem.published).fromNow()
+        return moment(this.item.published).fromNow()
       },
       refNiceTime() {
         return moment(this.innerRef.published).fromNow()
