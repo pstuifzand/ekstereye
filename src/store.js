@@ -17,7 +17,8 @@ export default new Vuex.Store({
       micropubEndpoint: '',
       microsubEndpoint: '/microsub',
       channelCreatorIsOpen: false,
-      eventSource: null
+      eventSource: null,
+      globalTimeline: {items: [{name:'Testing the global timeline'}]}
     };
     let loginData = JSON.parse(window.localStorage.getItem('login_data'))
     if (loginData) {
@@ -62,10 +63,10 @@ export default new Vuex.Store({
       state.microsubEndpoint = endpoints.microsubEndpoint
     },
     createEventSource(state, url) {
-      state.eventSource = new EventSource(state.microsubEndpoint + url, {
-        headers: {
-          'Authorization': 'Bearer ' + this.state.access_token
-        }
+      state.eventSource = new EventSource(state.microsubEndpoint + url + "&access_token=" + state.access_token, {
+        // headers: {
+        //   'Authorization': 'Bearer ' + this.state.access_token
+        // }
       })
       state.eventSource.addEventListener('open', evt => {
         // eslint-disable-next-line
@@ -82,6 +83,24 @@ export default new Vuex.Store({
       state.eventSource.addEventListener('error', evt => {
         // eslint-disable-next-line
         console.log(evt)
+      })
+      state.eventSource.addEventListener('new item', evt => {
+        let item = JSON.parse(evt.data)
+        // eslint-disable-next-line
+        state.timeline.items = [...state.timeline.items, item]
+        state.globalTimeline.items = _.take([item, ...state.globalTimeline.items], 10)
+      })
+      state.eventSource.addEventListener('new item in channel', evt => {
+        // eslint-disable-next-line
+        console.log(evt)
+
+        let d = JSON.parse(evt.data)
+        // eslint-disable-next-line
+        console.log(d, state.channels)
+        let channel = _.find(state.channels, item => item.uid === d.uid)
+        if (channel) {
+          channel.unread = d.unread
+        }
       })
     }
   },

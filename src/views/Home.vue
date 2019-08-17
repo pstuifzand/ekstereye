@@ -25,7 +25,9 @@
                 @getPage="getPage" @followFeed="openFeedFollower(arguments[0])"></Timeline>
     </div>
 
-    <div class="column"></div>
+    <div class="column">
+      <short-timeline :timeline="this.$store.state.globalTimeline"></short-timeline>
+    </div>
 
     <channel-creator :is-open="this.$store.state.channelCreatorIsOpen"></channel-creator>
     <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower" :initial-channel="channel" :initial-query="feedFollowerQuery"></feed-follower>
@@ -39,6 +41,7 @@
   import ChannelCreator from '../components/ChannelCreator.vue'
   import FeedFollower from "../components/FeedFollower"
   import NewPost from "../components/NewPost"
+  import ShortTimeline from "../components/ShortTimeline";
 
   export default {
     name: 'home',
@@ -48,7 +51,8 @@
       Channels,
       Channel,
       ChannelCreator,
-      NewPost
+      NewPost,
+      ShortTimeline
     },
 
     data() {
@@ -107,6 +111,7 @@
 
     mounted() {
       if (this.$store.state.logged_in) {
+        this.$store.dispatch('startEventListening', '?action=events')
         this.$store.dispatch('fetchChannels')
         this.$store.dispatch('fetchTimeline', {uid: this.uid})
       }
