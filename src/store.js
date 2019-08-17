@@ -85,6 +85,9 @@ export default new Vuex.Store({
         console.log(evt)
       })
       state.eventSource.addEventListener('new item', evt => {
+        // eslint-disable-next-line
+        console.log(evt)
+       
         let item = JSON.parse(evt.data)
         // eslint-disable-next-line
         state.timeline.items = [...state.timeline.items, item]
