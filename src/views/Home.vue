@@ -111,7 +111,6 @@
 
     mounted() {
       if (this.$store.state.logged_in) {
-        this.$store.dispatch('startEventListening', '?action=events')
         this.$store.dispatch('fetchChannels')
         this.$store.dispatch('fetchTimeline', {uid: this.uid})
       }

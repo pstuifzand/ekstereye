@@ -4,6 +4,7 @@ import router from './router'
 import store from './store'
 import 'bulma'
 import '@/styles.scss'
+import '@primer/css/utilities/index.scss';
 
 Vue.config.productionTip = false
 

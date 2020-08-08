@@ -1,5 +1,5 @@
 <template>
-    <div style="margin-top: 20px">
+    <div class="short-timeline">
         <div class="box small-item" style="margin-bottom: 4px" v-for="(item, i) in timeline.items" :key="i">
             <div class="name" v-text="text(item)"></div>
             <div class="time" v-text="niceTime(item)"></div>
@@ -36,8 +36,13 @@
 </script>
 
 <style scoped>
+    .short-timeline {
+        margin-top: 20px;
+        position: fixed;
+        max-width: 280px;
+    }
     .small-item {
-        font-size: 10px;
+        font-size: 12px;
     }
     .box {
         padding: 6px;

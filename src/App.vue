@@ -35,6 +35,7 @@
       if (item) {
         let loginData = JSON.parse(item)
         this.$store.dispatch('isLoggedIn', loginData)
+        this.$store.dispatch('startEventListening', '?action=events')
       }
     }
   }

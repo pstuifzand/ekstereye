@@ -63,6 +63,9 @@ export default new Vuex.Store({
       state.microsubEndpoint = endpoints.microsubEndpoint
     },
     createEventSource(state, url) {
+      if (state.eventSource !== null) {
+        state.eventSource.close()
+      }
       state.eventSource = new EventSource(state.microsubEndpoint + url + "&access_token=" + state.access_token, {
         // headers: {
         //   'Authorization': 'Bearer ' + this.state.access_token
@@ -83,15 +86,24 @@ export default new Vuex.Store({
       state.eventSource.addEventListener('error', evt => {
         // eslint-disable-next-line
         console.log(evt)
+        if (evt.message === "network error") {
+          state.eventSource.close()
+        }
       })
       state.eventSource.addEventListener('new item', evt => {
         // eslint-disable-next-line
         console.log(evt)
-       
-        let item = JSON.parse(evt.data)
-        // eslint-disable-next-line
-        state.timeline.items = [...state.timeline.items, item]
-        state.globalTimeline.items = _.take([item, ...state.globalTimeline.items], 10)
+
+        try {
+          let newItemMsg = JSON.parse(evt.data)
+          if (state.channel.uid === newItemMsg.channel) {
+            state.timeline.items = [...state.timeline.items, newItemMsg.item]
+          }
+          state.globalTimeline.items = _.takeRight([...state.globalTimeline.items, newItemMsg.item], 10)
+        } catch (e) {
+          // eslint-disable-next-line
+          console.log(e)
+        }
       })
       state.eventSource.addEventListener('new item in channel', evt => {
         // eslint-disable-next-line
@@ -152,7 +164,13 @@ export default new Vuex.Store({
       commit('newAccessToken', response)
     },
     markRead(x, {channel, entry}) {
-      let url = this.state.microsubEndpoint + '?action=timeline&method=mark_read&channel=' + encodeURIComponent(channel) + '&entry=' + encodeURIComponent(entry);
+      let entries = '';
+      if (Array.isArray(entry)) {
+        entries = _(entry).map(uid => '&entry[]='+encodeURIComponent(uid)).join("")
+      } else {
+        entries = '&entry=' + encodeURIComponent(entry)
+      }
+      let url = this.state.microsubEndpoint + '?action=timeline&method=mark_read&channel=' + encodeURIComponent(channel) + entries;
       return fetch(url, {
         method: 'POST',
         headers: {
@@ -193,21 +211,23 @@ export default new Vuex.Store({
       })
     },
     bottomReached() {
-      let count = 0
-      let uids = []
+      // eslint-disable-next-line
+      console.log('bottomReached')
+
       let items = this.state.timeline.items
-      uids = _.map(_.filter(items, item => !item._is_read), item => item._id)
+      // eslint-disable-next-line
+      console.log(items)
+      let uids = _(items).reject('_is_read').map('_id').value()
+      // eslint-disable-next-line
+      console.log(uids)
+
       items.forEach((item) => {
         if (item && !item._is_read) {
           item._is_read = true
-          count++;
         }
       })
-      if (count > 0) {
-        this.dispatch('markRead', {channel: this.state.channel.uid, 'entry[]': uids})
-          .then(() => {
-            this.dispatch('fetchChannels')
-          })
+      if (uids.length > 0) {
+        return this.dispatch('markRead', {channel: this.state.channel.uid, 'entry': uids})
       }
     },
     startEventListening({commit}, url) {

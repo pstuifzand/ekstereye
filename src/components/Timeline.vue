@@ -59,7 +59,7 @@
           .then(() => {
             item._is_read = true
           }).then(() => {
-            this.$store.dispatch('fetchChannels')
+            // this.$store.dispatch('fetchChannels')
           })
       },
       handleScroll() {
@@ -77,7 +77,7 @@
               child.$props.item._is_read = true
               let item = child.$props.item
               this.markRead(this.channel.uid, item).then(() => {
-                this.$store.dispatch('fetchChannels')
+                // this.$store.dispatch('fetchChannels')
               })
             }
           }
