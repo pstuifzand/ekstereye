@@ -42,6 +42,7 @@
                 <a @click="like">Like</a>
                 &middot; <a @click.prevent="openReply">Reply</a>
                 &middot; <a @click.prevent="repost">Repost</a>
+                &middot; <a @click.prevent="openBookmark">Bookmark</a>
                 &middot; <a @click.prevent="$emit('followFeed', author_url)" title="Try to follow the feed this item comes from">Follow</a>
                 &middot; <a @click.prevent="debug">Debug</a>
                 </span>
@@ -64,23 +65,53 @@
             </div>
           </div>
         </div>
+        <div class="media" v-if="bookmarking">
+          <div class="media-content">
+            <div class="field">
+              <div class="control">
+                <input type="text" class="input" placeholder="Title" v-model="bookmarkTitle">
+              </div>
+            </div>
+            <div class="field">
+              <label class="label">Add a note</label>
+              <div class="control">
+                <textarea class="textarea" v-model="bookmarkDescription"></textarea>
+              </div>
+            </div>
+            <div class="field">
+              <syndication-buttons v-model="selected" :targets="targets"/>
+            </div>
+            <div class="field">
+              <div class="control">
+                <button class="button is-primary" @click="bookmark">Bookmark</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-  import moment from 'moment'
+import moment from 'moment'
+import SyndicationButtons from "@/components/SyndicationButtons";
 
-  export default {
+export default {
     name: "Entry",
+    components: {SyndicationButtons},
     props: ['item'],
 
     data() {
       return {
         'replying': false,
         'replyText': '',
-        'showFooterButtons': true
+        'showFooterButtons': true,
+        bookmarking: false,
+        bookmarkTitle: '',
+        bookmarkDescription: '',
+        targets: [],
+        selected: []
       }
     },
 
@@ -120,6 +151,30 @@
           'properties': {
             'repost-of': [this.currentItem.url]
           },
+        })
+      },
+      openBookmark() {
+        this.bookmarking = true
+        this.bookmarkTitle = this.author_name + ' - ' + this.currentItem.name
+        this.bookmarkDescription = ''
+        this.selected = []
+        this.$store.dispatch('fetchSyndicationTargets')
+            .then(res => this.targets = res['syndicate-to'])
+      },
+      bookmark() {
+        this.$store.dispatch('micropubPost', {
+          'type': ['h-entry'],
+          'properties': {
+            'bookmark-of': [this.currentItem.url],
+            'name': [this.bookmarkTitle],
+            'content': [this.bookmarkDescription ],
+            'mp-syndicate-to': this.selected
+          },
+        }).then(() => {
+          this.bookmarkTitle = '';
+          this.bookmarkDescription = '';
+          this.selected = []
+          this.bookmarking = false
         })
       },
       hasRef(key) {
@@ -289,4 +344,5 @@
   .is-pre {
     white-space: pre-wrap;
   }
+
 </style>

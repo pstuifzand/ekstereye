@@ -178,6 +178,13 @@ export default new Vuex.Store({
         }
       })
     },
+    fetchSyndicationTargets() {
+      let micropub = new Micropub({
+        token: this.state.access_token,
+        micropubEndpoint: this.state.micropubEndpoint
+      })
+      return micropub.query('syndicate-to')
+    },
     micropubPost(_, mf2post) {
       let micropub = new Micropub({
         token: this.state.access_token,

@@ -11,6 +11,9 @@
               <textarea class="textarea" v-model="newPost"></textarea>
             </div>
           </div>
+          <div class="field">
+            <syndication-buttons v-model="selectedTargets" :targets="targets"/>
+          </div>
           <div class="level">
             <div class="level-left">
               <div class="level-item">
@@ -33,20 +36,30 @@
 </template>
 
 <script>
+  import SyndicationButtons from "@/components/SyndicationButtons";
   export default {
     name: "NewPost",
+    components:{
+      SyndicationButtons
+    },
     data() {
       return {
         newPost: '',
-        tags: [{name:"twitter"},{name:"instagram"}]
+        targets: [],
+        selectedTargets: []
       }
+    },
+    mounted() {
+      this.$store.dispatch('fetchSyndicationTargets')
+          .then(res => this.targets = res['syndicate-to'])
     },
     methods: {
       post() {
         this.$store.dispatch('micropubPost', {
           'type': ['h-entry'],
           'properties': {
-            'content': [this.newPost]
+            'content': [this.newPost],
+            'mp-syndicate-to': this.selectedTargets,
           },
         }).then(() => {
           this.newPost = '';
