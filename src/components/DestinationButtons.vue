@@ -10,7 +10,7 @@
 </template>
 <script>
 export default {
-  name: 'syndication-buttons',
+  name: 'destination-buttons',
   data() {
     return {
       selected: [],

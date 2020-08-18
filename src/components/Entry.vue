@@ -79,7 +79,13 @@
               </div>
             </div>
             <div class="field">
-              <syndication-buttons v-model="selected" :targets="targets"/>
+              Categories: <entry-categories v-model="categories"/>
+            </div>
+            <div class="field">
+              Syndication: <syndication-buttons v-model="selected" :targets="targets"/>
+            </div>
+            <div class="field">
+              Destination: <destination-buttons v-model="selectedDestinations" :targets="destinations"/>
             </div>
             <div class="field">
               <div class="control">
@@ -95,11 +101,17 @@
 
 <script>
 import moment from 'moment'
+import DestinationButtons from "@/components/DestinationButtons";
+import EntryCategories from "@/components/EntryCategories";
 import SyndicationButtons from "@/components/SyndicationButtons";
 
 export default {
     name: "Entry",
-    components: {SyndicationButtons},
+    components: {
+      DestinationButtons,
+      EntryCategories,
+      SyndicationButtons
+    },
     props: ['item'],
 
     data() {
@@ -111,7 +123,10 @@ export default {
         bookmarkTitle: '',
         bookmarkDescription: '',
         targets: [],
-        selected: []
+        selected: [],
+        destinations: [],
+        selectedDestinations: [],
+        categories: []
       }
     },
 
@@ -160,6 +175,8 @@ export default {
         this.selected = []
         this.$store.dispatch('fetchSyndicationTargets')
             .then(res => this.targets = res['syndicate-to'])
+        this.$store.dispatch('fetchDestinations')
+            .then(res => this.destinations = res['destination'])
       },
       bookmark() {
         this.$store.dispatch('micropubPost', {
@@ -168,7 +185,9 @@ export default {
             'bookmark-of': [this.currentItem.url],
             'name': [this.bookmarkTitle],
             'content': [this.bookmarkDescription ],
-            'mp-syndicate-to': this.selected
+            'category': this.categories,
+            'mp-syndicate-to': this.selected,
+            'mp-destination': this.selectedDestinations
           },
         }).then(() => {
           this.bookmarkTitle = '';

@@ -18,7 +18,7 @@ export default new Vuex.Store({
       microsubEndpoint: '/microsub',
       channelCreatorIsOpen: false,
       eventSource: null,
-      globalTimeline: {items: [{name:'Testing the global timeline'}]}
+      globalTimeline: {items: [{name: 'Testing the global timeline'}]}
     };
     let loginData = JSON.parse(window.localStorage.getItem('login_data'))
     if (loginData) {
@@ -108,11 +108,38 @@ export default new Vuex.Store({
       state.eventSource.addEventListener('new item in channel', evt => {
         // eslint-disable-next-line
         console.log(evt)
-        let d = JSON.parse(evt.data)
-        let channel = _.find(state.channels, item => item.uid === d.uid)
+        let msg = JSON.parse(evt.data)
+        let channel = _.find(state.channels, item => item.uid === msg.uid)
         if (channel) {
-          channel.unread = d.unread
+          channel.unread = msg.unread
         }
+      })
+
+      state.eventSource.addEventListener('new channel', evt => {
+        // eslint-disable-next-line
+        console.log(evt)
+        let msg = JSON.parse(evt.data)
+        let channel = _.find(state.channels, it => it.uid === msg.channel.uid)
+        if (!channel) {
+          state.channels.push(msg.channel)
+        }
+      })
+
+      state.eventSource.addEventListener('update channel', evt => {
+        // eslint-disable-next-line
+        console.log(evt)
+        let msg = JSON.parse(evt.data)
+        let channel = _.find(state.channels, it => it.uid === msg.channel.uid)
+        if (channel) {
+          channel.name = msg.channel.name
+        }
+      })
+
+      state.eventSource.addEventListener('delete channel', evt => {
+        // eslint-disable-next-line
+        console.log(evt)
+        let msg = JSON.parse(evt.data)
+        state.channels = _.remove(state.channels, it => it.uid === msg.uid)
       })
     }
   },
@@ -166,7 +193,7 @@ export default new Vuex.Store({
     markRead(x, {channel, entry}) {
       let entries = '';
       if (Array.isArray(entry)) {
-        entries = _(entry).map(uid => '&entry[]='+encodeURIComponent(uid)).join("")
+        entries = _(entry).map(uid => '&entry[]=' + encodeURIComponent(uid)).join("")
       } else {
         entries = '&entry=' + encodeURIComponent(entry)
       }
@@ -184,6 +211,13 @@ export default new Vuex.Store({
         micropubEndpoint: this.state.micropubEndpoint
       })
       return micropub.query('syndicate-to')
+    },
+    fetchDestinations() {
+      let micropub = new Micropub({
+        token: this.state.access_token,
+        micropubEndpoint: this.state.micropubEndpoint
+      })
+      return micropub.query('destination')
     },
     micropubPost(_, mf2post) {
       let micropub = new Micropub({

@@ -14,6 +14,9 @@
           <div class="field">
             <syndication-buttons v-model="selectedTargets" :targets="targets"/>
           </div>
+          <div class="field">
+            <destination-buttons v-model="selectedDestinations" :targets="destinations"/>
+          </div>
           <div class="level">
             <div class="level-left">
               <div class="level-item">
@@ -37,21 +40,27 @@
 
 <script>
   import SyndicationButtons from "@/components/SyndicationButtons";
+  import DestinationButtons from "@/components/DestinationButtons";
   export default {
     name: "NewPost",
     components:{
-      SyndicationButtons
+      SyndicationButtons,
+      DestinationButtons,
     },
     data() {
       return {
         newPost: '',
         targets: [],
-        selectedTargets: []
+        selectedTargets: [],
+        destinations: [],
+        selectedDestinations: []
       }
     },
     mounted() {
       this.$store.dispatch('fetchSyndicationTargets')
           .then(res => this.targets = res['syndicate-to'])
+      this.$store.dispatch('fetchDestinations')
+          .then(res => this.destinations = res['destination'])
     },
     methods: {
       post() {
@@ -60,6 +69,7 @@
           'properties': {
             'content': [this.newPost],
             'mp-syndicate-to': this.selectedTargets,
+            'mp-destination': this.selectedDestinations,
           },
         }).then(() => {
           this.newPost = '';
