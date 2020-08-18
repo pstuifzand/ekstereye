@@ -106,6 +106,7 @@
         }).then((res) => {
           if (!res.results) {
             this.loading = false
+            this.feeds = []
             return
           }
 
