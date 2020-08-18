@@ -193,7 +193,9 @@ export default {
           this.bookmarkTitle = '';
           this.bookmarkDescription = '';
           this.selected = []
+          this.selectedDestinations = []
           this.bookmarking = false
+          this.categories = []
         })
       },
       hasRef(key) {
