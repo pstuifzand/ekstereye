@@ -205,19 +205,18 @@ export default new Vuex.Store({
         }
       })
     },
-    fetchSyndicationTargets() {
+    configQuery: function (key) {
       let micropub = new Micropub({
         token: this.state.access_token,
         micropubEndpoint: this.state.micropubEndpoint
       })
-      return micropub.query('syndicate-to')
+      return micropub.query(key)
+    },
+    fetchSyndicationTargets() {
+      return this.configQuery('syndicate-to')
     },
     fetchDestinations() {
-      let micropub = new Micropub({
-        token: this.state.access_token,
-        micropubEndpoint: this.state.micropubEndpoint
-      })
-      return micropub.query('destination')
+      return this.configQuery('destination');
     },
     micropubPost(_, mf2post) {
       let micropub = new Micropub({
