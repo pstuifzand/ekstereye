@@ -12,9 +12,14 @@
             </div>
           </div>
           <div class="field">
+            Categories: <entry-categories v-model="categories" />
+          </div>
+          <div class="field">
+            Syndication:
             <syndication-buttons v-model="selectedTargets" :targets="targets"/>
           </div>
           <div class="field">
+            Destinations:
             <destination-buttons v-model="selectedDestinations" :targets="destinations"/>
           </div>
           <div class="level">
@@ -39,13 +44,16 @@
 </template>
 
 <script>
-  import SyndicationButtons from "@/components/SyndicationButtons";
   import DestinationButtons from "@/components/DestinationButtons";
+  import EntryCategories from "@/components/EntryCategories";
+  import SyndicationButtons from "@/components/SyndicationButtons";
+
   export default {
     name: "NewPost",
     components:{
-      SyndicationButtons,
       DestinationButtons,
+      EntryCategories,
+      SyndicationButtons,
     },
     data() {
       return {
@@ -53,7 +61,8 @@
         targets: [],
         selectedTargets: [],
         destinations: [],
-        selectedDestinations: []
+        selectedDestinations: [],
+        categories: []
       }
     },
     mounted() {
@@ -68,11 +77,15 @@
           'type': ['h-entry'],
           'properties': {
             'content': [this.newPost],
+            'category': this.categories,
             'mp-syndicate-to': this.selectedTargets,
             'mp-destination': this.selectedDestinations,
           },
         }).then(() => {
-          this.newPost = '';
+          this.newPost = ''
+          this.categories = []
+          this.selectedTargets = []
+          this.selectedDestinations = []
           this.$emit('close')
         })
       },
