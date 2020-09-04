@@ -14,7 +14,7 @@
     "lodash": "latest",
     "micropub-helper": "^1.4.0",
     "moment": "^2.22.2",
-    "node-sass": "^4.12.0",
+    "node-sass": "^4.13.1",
     "rel-scraper": "github:grantcodes/rel-scraper",
     "sass-loader": "^7.2.0",
     "vue": "^2.5.17",
