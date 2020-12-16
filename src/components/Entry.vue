@@ -15,7 +15,7 @@
             </p>
           </div>
 
-          <div class="content">
+          <div ref="content-container" :class="{'content': true, 'content-container': true, 'open': hiddenContentVisible}">
             <div v-if="isRef">
               <div><small><a :href="outside_author_url">{{ outside_author_name }}</a>&nbsp;<span v-text="refText"></span>:</small></div>
             </div>
@@ -35,9 +35,15 @@
                 </div>
               </div>
             </div>
-
-            <p>
-              <small>
+          </div>
+        </div>
+        <div>
+          <div class="level" v-if="hasHiddenContent">
+            <div class="level-item">
+              <button class="is-link" @click.prevent="toggleHiddenContent">Read more</button>
+            </div>
+            <div class="level-item">
+                <small>
                 <span v-if="showFooterButtons">
                 <a @click="like">Like</a>
                 &middot; <a @click.prevent="openReply">Reply</a>
@@ -46,8 +52,8 @@
                 &middot; <a @click.prevent="$emit('followFeed', author_url)" title="Try to follow the feed this item comes from">Follow</a>
                 &middot; <a @click.prevent="debug">Debug</a>
                 </span>
-              </small>
-            </p>
+                </small>
+            </div>
           </div>
         </div>
         <div class="media" v-if="replying">
@@ -126,7 +132,8 @@ export default {
         selected: [],
         destinations: [],
         selectedDestinations: [],
-        categories: []
+        categories: [],
+        hiddenContentVisible: false
       }
     },
 
@@ -206,6 +213,9 @@ export default {
         }
         return false
       },
+      toggleHiddenContent() {
+        this.hiddenContentVisible = !this.hiddenContentVisible
+      }
     },
 
     mounted() {
@@ -213,6 +223,15 @@ export default {
     },
 
     computed: {
+      hasHiddenContent () {
+        const el = this.$refs['content-container']
+        if (!el) {
+          // eslint-disable-next-line
+          console.log('ref content-container not found')
+          return true
+        }
+        return el.scrollHeight > el.clientHeight
+      },
       currentItem() {
         if (this.isRef) {
           return this.innerRef
@@ -317,7 +336,11 @@ export default {
         }
         if (!this.currentItem.author.name) {
           if (this.currentItem.author.url) {
-            return new URL(this.currentItem.author.url).hostname
+            try {
+              return new URL(this.currentItem.author.url).hostname
+            } catch (e) {
+              return this.currentItem.author.url
+            }
           }
         }
         return this.currentItem.author.name
@@ -364,6 +387,15 @@ export default {
   }
   .is-pre {
     white-space: pre-wrap;
+  }
+
+  .content-container {
+    max-height: 20vh;
+    overflow: hidden;
+  }
+
+  .content-container.open {
+    max-height: fit-content;
   }
 
 </style>
