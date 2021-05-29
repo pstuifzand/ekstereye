@@ -1,21 +1,23 @@
 <template>
   <div class="home columns">
-    <Channels class="channels column" :channels="this.$store.state.channels">
-      <div slot-scope="{ channel }">
-        <Channel :channel="channel" @channel-selected="selectChannel"></Channel>
-      </div>
-    </Channels>
+    <div class="column" style="padding-top: 20px">
+      <button class="channels-toggle button" type="button" @click="showChannels">Channels</button>
+
+      <Channels :class="channelsClass" :channels="this.$store.state.channels">
+        <div slot-scope="{ channel }">
+          <Channel :channel="channel" @channel-selected="selectChannel"></Channel>
+        </div>
+      </Channels>
+    </div>
 
     <div class="timeline column is-three-fifths">
       <div class="level">
         <div class="level-left">
           <h1 class="title is-5">{{ channel.name }}</h1>
         </div>
-        <div class="level-right">
+        <div class="level-right timeline-buttons">
           <div class="level-item">
             <button class="button" @click.prevent="openPost">New Post</button>
-          </div>
-          <div class="level-item">
             <button class="button" @click.prevent="openFeedFollower('')">Add feed</button>
           </div>
         </div>
@@ -59,7 +61,8 @@
       return {
         feedFollowerIsOpen: false,
         feedFollowerQuery: '',
-        showPost: false
+        showPost: false,
+        channelsVisible: false,
       }
     },
 
@@ -69,6 +72,12 @@
       },
       channel() {
         return this.$store.state.channel
+      },
+      channelsClass () {
+        return {
+          'channels-open': this.channelsVisible,
+          'channels': true
+        }
       }
     },
 
@@ -94,6 +103,9 @@
       },
       openPost() {
         this.showPost = true
+      },
+      showChannels () {
+        this.channelsVisible = !this.channelsVisible
       }
     },
 
@@ -119,6 +131,10 @@
 </script>
 
 <style scoped>
+  .home {
+    padding: 10px;
+  }
+
   .timeline {
     margin-top: 20px;
     padding-bottom: 100px;
@@ -131,5 +147,28 @@
     overflow-y: scroll;
     overflow-x: hidden;
     padding-bottom: 100px;
+    display: none;
+  }
+
+  .channels-open {
+    display: block;
+  }
+
+  .timeline-buttons {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .timeline-buttons .level-item .button + .button {
+    margin-left: 12px;
+  }
+
+  @media screen and (min-width: 600px) {
+    .channels-toggle {
+      display: none;
+    }
+    .channels {
+      display: block !important;
+    }
   }
 </style>

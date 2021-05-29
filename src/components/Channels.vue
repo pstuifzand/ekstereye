@@ -1,5 +1,5 @@
 <template>
-  <div :class="this.className">
+  <div>
     <div class="channels--channel" v-for="channel in channels" :key="channel.uid">
       <slot :channel="channel"></slot>
     </div>
@@ -12,7 +12,7 @@
   export default {
     name: "Channels",
     components: {ChannelCreator},
-    props: ['className', 'channels'],
+    props: ['channels'],
     methods: {
       open() {
         this.$store.dispatch('openChannelCreator')
@@ -22,4 +22,5 @@
 </script>
 
 <style scoped>
+
 </style>

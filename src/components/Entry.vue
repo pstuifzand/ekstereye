@@ -38,9 +38,9 @@
           </div>
         </div>
         <div>
-          <div class="level" v-if="hasHiddenContent">
+          <div class="level">
             <div class="level-item">
-              <button class="is-link" @click.prevent="toggleHiddenContent">Read more</button>
+              <button class="is-link" v-if="hasHiddenContent" @click.prevent="toggleHiddenContent">Read more</button>
             </div>
             <div class="level-item">
                 <small>
@@ -133,6 +133,7 @@ export default {
         destinations: [],
         selectedDestinations: [],
         categories: [],
+        hasHiddenContent: true,
         hiddenContentVisible: false
       }
     },
@@ -215,23 +216,18 @@ export default {
       },
       toggleHiddenContent() {
         this.hiddenContentVisible = !this.hiddenContentVisible
+        const el = this.$refs['content-container']
+        el.scrollIntoView(true)
       }
     },
 
     mounted() {
       this.showFooterButtons = true
+      const el = this.$refs['content-container']
+      this.hasHiddenContent = el.scrollHeight > el.clientHeight
     },
 
     computed: {
-      hasHiddenContent () {
-        const el = this.$refs['content-container']
-        if (!el) {
-          // eslint-disable-next-line
-          console.log('ref content-container not found')
-          return true
-        }
-        return el.scrollHeight > el.clientHeight
-      },
       currentItem() {
         if (this.isRef) {
           return this.innerRef
@@ -362,6 +358,19 @@ export default {
           return '';
         }
         return this.currentItem.author.photo
+      }
+    },
+    watch: {
+      item(newItem, oldItem) {
+        this.$nextTick(() => {
+          const el = this.$refs['content-container']
+          if (!el) {
+            // eslint-disable-next-line
+            console.log('ref content-container not found')
+            return
+          }
+          this.hasHiddenContent = el.scrollHeight > el.clientHeight
+        })
       }
     }
   }

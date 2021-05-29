@@ -91,13 +91,10 @@ export default new Vuex.Store({
         }
       })
       state.eventSource.addEventListener('new item', evt => {
-        // eslint-disable-next-line
-        console.log(evt)
-
         try {
           let newItemMsg = JSON.parse(evt.data)
           if (state.channel.uid === newItemMsg.channel) {
-            state.timeline.items = [...state.timeline.items, newItemMsg.item]
+            state.timeline.items = [newItemMsg.item, ...state.timeline.items]
           }
           state.globalTimeline.items = _.takeRight([...state.globalTimeline.items, newItemMsg.item], 10)
         } catch (e) {
@@ -205,7 +202,7 @@ export default new Vuex.Store({
         }
       })
     },
-    configQuery: function (key) {
+    configQuery ({commit}, key) {
       let micropub = new Micropub({
         token: this.state.access_token,
         micropubEndpoint: this.state.micropubEndpoint
@@ -213,10 +210,10 @@ export default new Vuex.Store({
       return micropub.query(key)
     },
     fetchSyndicationTargets() {
-      return this.configQuery('syndicate-to')
+      return this.dispatch('configQuery', 'syndicate-to')
     },
     fetchDestinations() {
-      return this.configQuery('destination');
+      return this.dispatch('configQuery', 'destination')
     },
     micropubPost(_, mf2post) {
       let micropub = new Micropub({
@@ -226,7 +223,7 @@ export default new Vuex.Store({
       return micropub.create(mf2post)
     },
     micropubLikeOf(_, url) {
-      this.dispatch({
+      this.dispatch('micropubPost', {
         'type': ['h-entry'],
         'properties': {
           'like-of': [url]
