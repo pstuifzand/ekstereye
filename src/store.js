@@ -202,7 +202,7 @@ export default new Vuex.Store({
         }
       })
     },
-    configQuery ({commit}, key) {
+    configQuery (_, key) {
       let micropub = new Micropub({
         token: this.state.access_token,
         micropubEndpoint: this.state.micropubEndpoint

@@ -361,7 +361,7 @@ export default {
       }
     },
     watch: {
-      item(newItem, oldItem) {
+      item() {
         this.$nextTick(() => {
           const el = this.$refs['content-container']
           if (!el) {
