@@ -260,8 +260,12 @@ export default new Vuex.Store({
     closeSearch({commit}) {
       commit('setSearchPopupState', false)
     },
-    startQuery({commit}, query) {
-      fetch(this.state.microsubEndpoint + '?action=search&channel=global&query='+query, {
+    startQuery({state, commit}, query) {
+      let channel = 'global'
+      if (state.channel.uid !== null) {
+        channel = state.channel.uid
+      }
+      fetch(this.state.microsubEndpoint + '?action=search&channel='+channel+'&query='+query, {
         headers: {
           'Authorization': 'Bearer ' + this.state.access_token
         },
