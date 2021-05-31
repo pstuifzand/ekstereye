@@ -12,23 +12,19 @@
         <button class="button" @click="nextPage" v-if="timeline.paging.after">Next Page</button>
       </div>
     </div>
-    <DebugModal :active="showDebug" :item="debugItem" @close="showDebug = false"></DebugModal>
   </div>
 </template>
 
 <script>
   import TimelineEntry from '../components/Entry'
-  import DebugModal from '../components/DebugModal'
 
   export default {
     name: "Timeline",
     props: ['className', 'channel', 'timeline'],
-    components: {TimelineEntry, DebugModal},
+    components: {TimelineEntry},
 
     data() {
       return {
-        showDebug: false,
-        debugItem: null,
         state: 'new'
       }
     },
@@ -43,8 +39,7 @@
 
     methods: {
       debug(item) {
-        this.debugItem = item
-        this.showDebug = true
+        this.$store.dispatch('openDebug', item)
       },
       nextPage() {
         if (this.timeline.paging.after) {

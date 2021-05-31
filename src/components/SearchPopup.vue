@@ -17,7 +17,7 @@
         </div>
         
         <div class="timeline--item" v-for="item in searchItems" :key="item.id">
-          <TimelineEntry :item="item" :is-main-entry="true" />
+          <TimelineEntry :item="item" :is-main-entry="true" @debug="debug" />
         </div>
       </div>
     </div>
@@ -65,6 +65,9 @@ export default {
     close () {
       this.$store.dispatch('closeSearch')
       this.query = ''
+    },
+    debug (item) {
+      this.$store.dispatch('openDebug', item)
     }
   }
 }

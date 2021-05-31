@@ -34,6 +34,8 @@
     <channel-creator :is-open="this.$store.state.channelCreatorIsOpen"></channel-creator>
     <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower" :initial-channel="channel" :initial-query="feedFollowerQuery"></feed-follower>
     <search-popup :is-open="searchPopupIsOpen"></search-popup>
+    <DebugModal :active="this.$store.state.debugVisible"
+                :item="this.$store.state.debugItem"></DebugModal>
   </div>
 </template>
 
@@ -46,6 +48,7 @@
   import NewPost from "../components/NewPost"
   import ShortTimeline from "../components/ShortTimeline";
   import SearchPopup from "../components/SearchPopup";
+  import DebugModal from "../components/DebugModal";
 
   export default {
     name: 'home',
@@ -57,7 +60,8 @@
       ChannelCreator,
       NewPost,
       ShortTimeline,
-      SearchPopup
+      SearchPopup,
+      DebugModal
     },
 
     data() {

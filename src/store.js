@@ -12,7 +12,6 @@ export default new Vuex.Store({
       channels: [],
       timeline: {items: [], paging: {}},
       channel: {},
-      debug: false,
       logged_in: false,
       micropubEndpoint: '',
       microsubEndpoint: '/microsub',
@@ -20,7 +19,10 @@ export default new Vuex.Store({
       searchPopupIsOpen: false,
       searchItems: [],
       eventSource: null,
-      globalTimeline: {items: [{name: 'Testing the global timeline'}]}
+      globalTimeline: {items: [{name: 'Testing the global timeline'}]},
+      debug: false,
+      debugItem: {},
+      debugVisible: false
     };
     let loginData = JSON.parse(window.localStorage.getItem('login_data'))
     if (loginData) {
@@ -147,6 +149,13 @@ export default new Vuex.Store({
     },
     newSearchResults(state, items) {
       state.searchItems = items
+    },
+    openDebugPopup(state, item) {
+      state.debugItem = item
+      state.debugVisible = true
+    },
+    closeDebugPopup(state) {
+      state.debugVisible = false
     }
   },
 
@@ -295,6 +304,12 @@ export default new Vuex.Store({
     },
     startEventListening({commit}, url) {
       commit('createEventSource', url)
-    }
+    },
+    openDebug({commit}, item) {
+      return commit('openDebugPopup', item)
+    },
+    closeDebug({commit}) {
+      return commit('closeDebugPopup')
+    },
   }
 })

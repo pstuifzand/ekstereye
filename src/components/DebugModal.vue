@@ -25,7 +25,7 @@
     },
     methods: {
       close() {
-        this.$emit('close')
+        this.$store.dispatch('closeDebug')
       }
     }
   }
