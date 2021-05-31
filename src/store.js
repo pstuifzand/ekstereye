@@ -17,7 +17,7 @@ export default new Vuex.Store({
       micropubEndpoint: '',
       microsubEndpoint: '/microsub',
       channelCreatorIsOpen: false,
-      searchPopupIsOpen: true,
+      searchPopupIsOpen: false,
       searchItems: [],
       eventSource: null,
       globalTimeline: {items: [{name: 'Testing the global timeline'}]}
