@@ -13,7 +13,11 @@
 
         </div>
         <div class="navbar-menu">
-          <!--<router-link to="/about">About</router-link>-->
+          <div class="navbar-end">
+            <div class="buttons">
+              <button class="button is-light" @click="openSearch">Search</button>
+            </div>
+          </div>
         </div>
       </div>
     </nav>
@@ -36,6 +40,11 @@
         let loginData = JSON.parse(item)
         this.$store.dispatch('isLoggedIn', loginData)
         this.$store.dispatch('startEventListening', '?action=events')
+      }
+    },
+    methods: {
+      openSearch () {
+        this.$store.dispatch('openSearch')
       }
     }
   }

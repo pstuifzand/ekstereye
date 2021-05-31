@@ -33,6 +33,7 @@
 
     <channel-creator :is-open="this.$store.state.channelCreatorIsOpen"></channel-creator>
     <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower" :initial-channel="channel" :initial-query="feedFollowerQuery"></feed-follower>
+    <search-popup :is-open="searchPopupIsOpen"></search-popup>
   </div>
 </template>
 
@@ -44,6 +45,7 @@
   import FeedFollower from "../components/FeedFollower"
   import NewPost from "../components/NewPost"
   import ShortTimeline from "../components/ShortTimeline";
+  import SearchPopup from "../components/SearchPopup";
 
   export default {
     name: 'home',
@@ -54,7 +56,8 @@
       Channel,
       ChannelCreator,
       NewPost,
-      ShortTimeline
+      ShortTimeline,
+      SearchPopup
     },
 
     data() {
@@ -78,6 +81,9 @@
           'channels-open': this.channelsVisible,
           'channels': true
         }
+      },
+      searchPopupIsOpen () {
+        return this.$store.state.searchPopupIsOpen
       }
     },
 

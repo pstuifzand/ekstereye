@@ -17,6 +17,8 @@ export default new Vuex.Store({
       micropubEndpoint: '',
       microsubEndpoint: '/microsub',
       channelCreatorIsOpen: false,
+      searchPopupIsOpen: true,
+      searchItems: [],
       eventSource: null,
       globalTimeline: {items: [{name: 'Testing the global timeline'}]}
     };
@@ -57,6 +59,10 @@ export default new Vuex.Store({
     },
     setChannelCreatorState(state, open) {
       state.channelCreatorIsOpen = open
+    },
+    setSearchPopupState(state, open) {
+      state.searchPopupIsOpen = open
+      state.searchItems = []
     },
     newEndpoints(state, endpoints) {
       state.micropubEndpoint = endpoints.micropubEndpoint
@@ -138,6 +144,9 @@ export default new Vuex.Store({
         let msg = JSON.parse(evt.data)
         state.channels = _.remove(state.channels, it => it.uid === msg.uid)
       })
+    },
+    newSearchResults(state, items) {
+      state.searchItems = items
     }
   },
 
@@ -235,6 +244,23 @@ export default new Vuex.Store({
     },
     closeChannelCreator({commit}) {
       commit('setChannelCreatorState', false)
+    },
+    openSearch({commit}) {
+      commit('setSearchPopupState', true)
+    },
+    closeSearch({commit}) {
+      commit('setSearchPopupState', false)
+    },
+    startQuery({commit}, query) {
+      fetch(this.state.microsubEndpoint + '?action=search&channel=global&query='+query, {
+        headers: {
+          'Authorization': 'Bearer ' + this.state.access_token
+        },
+        method: 'POST'
+      }).then(response => response.json())
+        .then(response => {
+          commit('newSearchResults', response.items)
+        })
     },
     createChannel(x, name) {
       let url = this.state.microsubEndpoint + '?action=channels&name=' + encodeURIComponent(name)
