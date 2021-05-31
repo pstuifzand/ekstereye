@@ -43,7 +43,7 @@ export default {
   watch: {
     isOpen(val) {
       if (val) {
-        this.$refs.query.focus()
+        this.$nextTick(() => this.$refs.query.focus())
       }
     }
   },
