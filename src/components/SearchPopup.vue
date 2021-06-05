@@ -35,7 +35,8 @@ export default {
   props: ['is-open'],
   data() {
     return {
-      query: ''
+      query: '',
+      loading: false
     }
   },
   mounted () {
@@ -60,7 +61,11 @@ export default {
   },
   methods: {
     search () {
+      this.loading = true
       this.$store.dispatch('startQuery', this.query)
+        .then(() => {
+          this.loading = false
+        })
     },
     close () {
       this.$store.dispatch('closeSearch')

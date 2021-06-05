@@ -265,15 +265,16 @@ export default new Vuex.Store({
       if (state.channel.uid !== null) {
         channel = state.channel.uid
       }
-      fetch(this.state.microsubEndpoint + '?action=search&channel='+channel+'&query='+query, {
+      return fetch(this.state.microsubEndpoint + '?action=search&channel='+channel+'&query='+query, {
         headers: {
           'Authorization': 'Bearer ' + this.state.access_token
         },
         method: 'POST'
-      }).then(response => response.json())
-        .then(response => {
-          commit('newSearchResults', response.items)
-        })
+      })
+      .then(response => response.json())
+      .then(response => {
+        commit('newSearchResults', response.items)
+      })
     },
     createChannel(x, name) {
       let url = this.state.microsubEndpoint + '?action=channels&name=' + encodeURIComponent(name)
