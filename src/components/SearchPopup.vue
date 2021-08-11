@@ -10,6 +10,7 @@
         <div class="field has-addons">
           <div class="control is-expanded">
             <input type="text" class="input is-expanded" id="query" placeholder="Search for items" v-model="query" ref="query" @keypress.enter="search"/>
+            <span class="error" v-text="error"></span>
           </div>
           <div class="control">
             <button :class="searchClasses" @click="search">Search</button>
@@ -36,7 +37,8 @@ export default {
   data() {
     return {
       query: '',
-      loading: false
+      loading: false,
+      error: ''
     }
   },
   mounted () {
@@ -62,9 +64,15 @@ export default {
   methods: {
     search () {
       this.loading = true
+      this.error = ''
       this.$store.dispatch('startQuery', this.query)
-        .then(() => {
+        .then(result => {
           this.loading = false
+          if (result.error) {
+            this.error = result.error
+          } else {
+            this.error = ''
+          }
         })
     },
     close () {

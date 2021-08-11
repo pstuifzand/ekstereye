@@ -273,7 +273,13 @@ export default new Vuex.Store({
       })
       .then(response => response.json())
       .then(response => {
-        commit('newSearchResults', response.items)
+        if (response.items) {
+          commit('newSearchResults', response.items)
+          return { error: false }
+        } else {
+          commit('newSearchResults', [])
+          return { error: response.error }
+        }
       })
     },
     createChannel(x, name) {
