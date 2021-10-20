@@ -262,7 +262,7 @@ export default new Vuex.Store({
     },
     startQuery({state, commit}, query) {
       let channel = 'global'
-      if (state.channel.uid !== null) {
+      if (state.channel !== null && state.channel.uid !== null && state.channel.uid !== 'home') {
         channel = state.channel.uid
       }
       return fetch(this.state.microsubEndpoint + '?action=search&channel='+channel+'&query='+query, {
