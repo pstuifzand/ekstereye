@@ -19,7 +19,7 @@ export default new Vuex.Store({
       searchPopupIsOpen: false,
       searchItems: [],
       eventSource: null,
-      globalTimeline: {items: [{name: 'Testing the global timeline'}]},
+      globalTimeline: {items: []},
       debug: false,
       debugItem: {},
       debugVisible: false
