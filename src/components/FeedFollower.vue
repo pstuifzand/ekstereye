@@ -120,9 +120,13 @@
       },
       showFeed(feed) {
         feed.loading = true
-        let url = this.$store.state.microsubEndpoint + '?action=preview&url=' + encodeURIComponent(feed.url)
+        let url = this.$store.state.microsubEndpoint
+        let formData = new URLSearchParams();
+        formData.set('action', 'preview')
+        formData.set('url', feed.url)
         return fetch(url, {
-          method: 'GET',
+          method: 'POST',
+          body: formData,
           headers: {
             'Authorization': 'Bearer ' + this.$store.state.access_token
           }
