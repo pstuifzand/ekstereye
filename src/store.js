@@ -74,10 +74,10 @@ export default new Vuex.Store({
       if (state.eventSource !== null) {
         state.eventSource.close()
       }
-      state.eventSource = new EventSource(state.microsubEndpoint + url + "&access_token=" + state.access_token, {
-        // headers: {
-        //   'Authorization': 'Bearer ' + this.state.access_token
-        // }
+      state.eventSource = new EventSource(state.microsubEndpoint + url, {
+        headers: {
+          'Authorization': 'Bearer ' + this.state.access_token
+        }
       })
       state.eventSource.addEventListener('open', evt => {
         // eslint-disable-next-line
