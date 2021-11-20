@@ -254,13 +254,18 @@ export default {
           return this.item.refs[this.item['like-of']]
         } else if (this.isRepost) {
           return this.item.refs[this.item['repost-of']]
+        } else if (this.isBookmark) {
+          return this.item.refs[this.item['bookmark-of']]
         }
       },
       isRef() {
-        return this.isLike || this.isRepost
+        return this.isLike || this.isRepost || this.isBookmark
       },
       isLike() {
         return this.hasRef('like-of')
+      },
+      isBookmark() {
+        return this.hasRef('bookmark-of')
       },
       isRepost() {
         return this.hasRef('repost-of')
@@ -271,6 +276,9 @@ export default {
         }
         if (this.isRepost) {
           return 'reposted'
+        }
+        if (this.isBookmark) {
+          return 'bookmarked'
         }
         return ''
       },
