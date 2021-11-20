@@ -387,7 +387,7 @@ export default {
 
 <style scoped>
   .entry.unread {
-    border-color: #555;
+    outline: 2px solid #5757e8;
   }
 
   .media .entry {
