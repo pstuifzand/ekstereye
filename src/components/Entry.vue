@@ -370,6 +370,7 @@ export default {
             return
           }
           this.hasHiddenContent = el.scrollHeight > el.clientHeight
+          this.hiddenContentVisible = false
         })
       }
     }
