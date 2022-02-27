@@ -9,9 +9,9 @@
   },
   "dependencies": {
     "@primer/css": "^14.4.0",
-    "ajv": "^6.12.6",
-    "axios": "^0.21.1",
-    "bulma": "^0.7.5",
+    "ajv": "^8.10.0",
+    "axios": "^0.21.4",
+    "bulma": "^0.9.3",
     "event-source-polyfill": "0.0.16",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.21",
