@@ -10,7 +10,7 @@
   "dependencies": {
     "@primer/css": "^14.4.0",
     "ajv": "^6.12.6",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "bulma": "^0.7.5",
     "event-source-polyfill": "0.0.16",
     "isomorphic-fetch": "^2.2.1",
