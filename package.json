@@ -9,20 +9,22 @@
   },
   "dependencies": {
     "@primer/css": "^14.4.0",
+    "ajv": "^6.12.6",
+    "axios": "^0.21.1",
     "bulma": "^0.7.5",
     "event-source-polyfill": "0.0.16",
     "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.21",
-    "micropub-helper": "^1.6.1",
-    "moment": "^2.27.0",
+    "micropub-helper": "^1.6.2",
+    "moment": "^2.29.1",
     "node-sass": "^4.14.1",
     "rel-parser": "github:grantcodes/rel-scraper",
     "rel-scraper": "github:grantcodes/rel-scraper",
     "sass-loader": "^7.3.1",
     "tailwindcss": "1.1.4",
-    "vue": "^2.6.11",
-    "vue-router": "^3.4.3",
-    "vuex": "^3.5.1"
+    "vue": "^2.6.14",
+    "vue-router": "^3.5.3",
+    "vuex": "^3.6.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.12.1",
@@ -30,7 +32,7 @@
     "@vue/cli-service": "^3.12.1",
     "postcss-node-sass": "^2.1.8",
     "postcss-scss": "^2.1.1",
-    "vue-template-compiler": "^2.6.11"
+    "vue-template-compiler": "^2.6.14"
   },
   "eslintConfig": {
     "root": true,
