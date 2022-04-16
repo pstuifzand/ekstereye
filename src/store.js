@@ -265,7 +265,11 @@ export default new Vuex.Store({
       if (state.channel !== null && state.channel.uid !== null && state.channel.uid !== 'home') {
         channel = state.channel.uid
       }
-      return fetch(this.state.microsubEndpoint + '?action=search&channel='+channel+'&query='+query, {
+      const url = new URL(this.state.microsubEndpoint)
+      url.searchParams.set('action', 'search')
+      url.searchParams.set('channel', channel)
+      url.searchParams.set('query', query)
+      return fetch(url.toString(), {
         headers: {
           'Authorization': 'Bearer ' + this.state.access_token
         },
