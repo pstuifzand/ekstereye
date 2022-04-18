@@ -11,14 +11,14 @@
     </div>
 
     <div class="timeline column is-three-fifths">
-      <div class="level">
+      <div class="level is-mobile">
         <div class="level-left">
           <h1 class="title is-5">{{ channel.name }}</h1>
         </div>
         <div class="level-right timeline-buttons">
           <div class="level-item">
-            <button class="button" @click.prevent="openPost">New Post</button>
-            <button class="button" @click.prevent="openFeedFollower('')">Add feed</button>
+            <button class="button is-small" @click.prevent="openPost">New Post</button>
+            <button class="button is-small" @click.prevent="openFeedFollower('')">Add feed</button>
           </div>
         </div>
       </div>

@@ -4,6 +4,9 @@
       <TimelineEntry :item="item" @debug="debug" @markRead="markRead(channel.uid, ...arguments)" @followFeed="$emit('followFeed', arguments[0])"
                      :is-main-entry="true"/>
     </div>
+    <div v-if="items.length === 0">
+      <p class="text-center">No items in this timeline</p>
+    </div>
     <div class="level">
       <div class="level-item">
         <button class="button" @click="prevPage" v-if="timeline.paging.before">Prev Page</button>

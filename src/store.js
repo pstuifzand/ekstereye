@@ -179,6 +179,9 @@ export default new Vuex.Store({
       commit('clearTimeline', {channel: channel})
     },
     fetchTimeline({commit}, channel) {
+      if (!channel.uid) {
+        channel.uid = 'home';
+      }
       let url = this.state.microsubEndpoint + '?action=timeline&channel=' + channel.uid
       if (channel.after) {
         url += '&after=' + channel.after;
