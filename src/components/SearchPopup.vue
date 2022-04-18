@@ -16,7 +16,14 @@
             <button :class="searchClasses" @click="search">Search</button>
           </div>
         </div>
-        
+
+        <div class="field">
+          <div class="control">
+            <label for="global" class="radio"><input type="radio" name="channel" id="global" value="global" v-model="searchChannel"> Global</label>
+            <label for="channel" class="radio"><input type="radio" name="channel" id="channel" value="channel" v-model="searchChannel"> Channel</label>
+          </div>
+        </div>
+
         <div class="timeline--item" v-for="item in searchItems" :key="item.id">
           <TimelineEntry :item="item" :is-main-entry="true" @debug="debug" />
         </div>
@@ -38,7 +45,8 @@ export default {
     return {
       query: '',
       loading: false,
-      error: ''
+      error: '',
+      searchChannel: 'global'
     }
   },
   mounted () {
@@ -65,7 +73,7 @@ export default {
     search () {
       this.loading = true
       this.error = ''
-      this.$store.dispatch('startQuery', this.query)
+      this.$store.dispatch('startQuery', {query: this.query, channel: this.searchChannel})
         .then(result => {
           this.loading = false
           if (result.error) {

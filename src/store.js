@@ -268,14 +268,22 @@ export default new Vuex.Store({
       commit('setSearchPopupState', false)
     },
     startQuery({state, commit}, query) {
-      let channel = 'global'
-      if (state.channel !== null && state.channel.uid !== null && state.channel.uid !== 'home') {
-        channel = state.channel.uid
+      let channel
+      if (query.channel) {
+        if (query.channel === 'global') {
+          channel = 'global'
+        } else if (query.channel === 'channel') {
+          if (state.channel !== null && state.channel.uid !== null) {
+            channel = state.channel.uid
+          }
+        } else {
+          channel = 'global'
+        }
       }
       const url = new URL(this.state.microsubEndpoint)
       url.searchParams.set('action', 'search')
       url.searchParams.set('channel', channel)
-      url.searchParams.set('query', query)
+      url.searchParams.set('query', query.query)
       return fetch(url.toString(), {
         headers: {
           'Authorization': 'Bearer ' + this.state.access_token

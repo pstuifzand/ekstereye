@@ -3,7 +3,7 @@
     <div class="column" style="padding-top: 20px">
       <button class="channels-toggle button" type="button" @click="showChannels">Channels</button>
 
-      <Channels :class="channelsClass" :channels="this.$store.state.channels">
+      <Channels :class="channelsClass" :channels="this.channels">
         <div slot-scope="{ channel }">
           <Channel :channel="channel" @channel-selected="selectChannel"></Channel>
         </div>
@@ -79,6 +79,9 @@
       },
       channel() {
         return this.$store.state.channel
+      },
+      channels() {
+        return this.$store.state.channels
       },
       channelsClass () {
         return {
