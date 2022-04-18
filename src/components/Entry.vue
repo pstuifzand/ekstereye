@@ -216,15 +216,18 @@ export default {
       },
       toggleHiddenContent() {
         this.hiddenContentVisible = !this.hiddenContentVisible
-        const el = this.$refs['content-container']
-        el.scrollIntoView(true)
+        // const el = this.$refs['content-container']
+        // el.scrollIntoView(true)
       }
     },
 
     mounted() {
       this.showFooterButtons = true
       const el = this.$refs['content-container']
-      this.hasHiddenContent = el.scrollHeight > el.clientHeight
+      this.hiddenContentVisible = false
+      this.$nextTick(() => {
+        this.hasHiddenContent = el.scrollHeight > el.clientHeight
+      })
     },
 
     computed: {
@@ -377,8 +380,10 @@ export default {
             console.log('ref content-container not found')
             return
           }
-          this.hasHiddenContent = el.scrollHeight > el.clientHeight
           this.hiddenContentVisible = false
+          this.$nextTick(() => {
+            this.hasHiddenContent = el.scrollHeight > el.clientHeight
+          })
         })
       }
     }
