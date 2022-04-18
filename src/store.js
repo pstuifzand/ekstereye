@@ -80,21 +80,19 @@ export default new Vuex.Store({
           'Authorization': 'Bearer ' + this.state.access_token
         }
       })
-      state.eventSource.addEventListener('open', evt => {
-        // eslint-disable-next-line
-        console.log(evt)
-      })
-      state.eventSource.addEventListener('ping', evt => {
-        // eslint-disable-next-line
-        console.log(evt)
-      })
-      state.eventSource.addEventListener('message', evt => {
-        // eslint-disable-next-line
-        console.log(evt)
-      })
+      // state.eventSource.addEventListener('open', evt => {
+      //   // eslint-disable-next-line
+      //   console.log(evt)
+      // })
+      // state.eventSource.addEventListener('ping', evt => {
+      //   // eslint-disable-next-line
+      //   console.log(evt)
+      // })
+      // state.eventSource.addEventListener('message', evt => {
+      //   // eslint-disable-next-line
+      //   console.log(evt)
+      // })
       state.eventSource.addEventListener('error', evt => {
-        // eslint-disable-next-line
-        console.log(evt)
         if (evt.message === "network error") {
           state.eventSource.close()
         }
@@ -112,8 +110,6 @@ export default new Vuex.Store({
         }
       })
       state.eventSource.addEventListener('new item in channel', evt => {
-        // eslint-disable-next-line
-        console.log(evt)
         let msg = JSON.parse(evt.data)
         let channel = _.find(state.channels, item => item.uid === msg.uid)
         if (channel) {
@@ -122,8 +118,6 @@ export default new Vuex.Store({
       })
 
       state.eventSource.addEventListener('new channel', evt => {
-        // eslint-disable-next-line
-        console.log(evt)
         let msg = JSON.parse(evt.data)
         let channel = _.find(state.channels, it => it.uid === msg.channel.uid)
         if (!channel) {
@@ -132,8 +126,6 @@ export default new Vuex.Store({
       })
 
       state.eventSource.addEventListener('update channel', evt => {
-        // eslint-disable-next-line
-        console.log(evt)
         let msg = JSON.parse(evt.data)
         let channel = _.find(state.channels, it => it.uid === msg.channel.uid)
         if (channel) {
@@ -142,8 +134,6 @@ export default new Vuex.Store({
       })
 
       state.eventSource.addEventListener('delete channel', evt => {
-        // eslint-disable-next-line
-        console.log(evt)
         let msg = JSON.parse(evt.data)
         state.channels = _.remove(state.channels, it => it.uid === msg.uid)
       })
@@ -333,7 +323,7 @@ export default new Vuex.Store({
       }
     },
     startEventListening({commit}, url) {
-      commit('createEventSource', url)
+      return commit('createEventSource', url)
     },
     openDebug({commit}, item) {
       return commit('openDebugPopup', item)
