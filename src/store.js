@@ -22,7 +22,8 @@ export default new Vuex.Store({
       globalTimeline: {items: []},
       debug: false,
       debugItem: {},
-      debugVisible: false
+      debugVisible: false,
+      menuActive: false,
     };
     let loginData = JSON.parse(window.localStorage.getItem('login_data'))
     if (loginData) {
@@ -156,6 +157,9 @@ export default new Vuex.Store({
     },
     closeDebugPopup(state) {
       state.debugVisible = false
+    },
+    activateMenu(state) {
+      state.menuActive = !state.menuActive
     }
   },
 
@@ -326,5 +330,8 @@ export default new Vuex.Store({
     closeDebug({commit}) {
       return commit('closeDebugPopup')
     },
+    toggleMenu({commit}) {
+      return commit('activateMenu')
+    }
   }
 })

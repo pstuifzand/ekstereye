@@ -5,14 +5,13 @@
         <div class="navbar-brand">
           <router-link to="/" class="navbar-item">Ekster</router-link>
 
-          <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+          <a role="button" :class="{'navbar-burger':true,'is-active':menuActive}" aria-label="menu" aria-expanded="false" @click="toggleMenu">
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
           </a>
-
         </div>
-        <div class="navbar-menu">
+        <div :class="{'navbar-menu':true,'is-active':menuActive}">
           <div class="navbar-end">
             <div class="buttons">
               <button class="button is-light" @click="openSearch">Search</button>
@@ -42,10 +41,18 @@
         this.$store.dispatch('startEventListening', '?action=events')
       }
     },
+    computed: {
+      menuActive() {
+        return this.$store.state.menuActive
+      }
+    },
     methods: {
       openSearch () {
         this.$store.dispatch('openSearch')
-      }
+      },
+      toggleMenu () {
+        this.$store.dispatch('toggleMenu' )
+      },
     }
   }
 </script>
