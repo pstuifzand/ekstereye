@@ -135,7 +135,7 @@ export default new Vuex.Store({
 
       state.eventSource.addEventListener('delete channel', evt => {
         let msg = JSON.parse(evt.data)
-        state.channels = _.remove(state.channels, it => it.uid === msg.uid)
+        state.channels = _.filter(state.channels, it => it.uid !== msg.uid)
       })
     },
     newSearchResults(state, items) {
