@@ -1,9 +1,9 @@
 <template>
   <div>
     <div :class="classes" @click="markRead">
-      <div class="card-image" v-if="photo_first">
+      <div class="card-image" v-if="mainImage">
         <figure class="image">
-          <img :src="photo_first"/>
+          <img :src="mainImage"/>
         </figure>
       </div>
 
@@ -30,8 +30,8 @@
               <div class="content" v-html="main_content"></div>
 
               <div class="photos">
-                <div class="photo" v-for="photo in photo_rest" :key="photo">
-                  <img :src="photo" class="image"/>
+                <div class="photo" v-for="photo in photo_all" :key="photo">
+                  <img :src="photo" class="image" @click="replaceMainImage(photo)"/>
                 </div>
               </div>
             </div>
@@ -134,7 +134,8 @@ export default {
         selectedDestinations: [],
         categories: [],
         hasHiddenContent: true,
-        hiddenContentVisible: false
+        hiddenContentVisible: false,
+        mainImage: null,
       }
     },
 
@@ -218,10 +219,14 @@ export default {
         this.hiddenContentVisible = !this.hiddenContentVisible
         // const el = this.$refs['content-container']
         // el.scrollIntoView(true)
+      },
+      replaceMainImage(newImage) {
+        this.mainImage = newImage
       }
     },
 
     mounted() {
+      this.mainImage = this.photo_first
       this.showFooterButtons = true
       const el = this.$refs['content-container']
       this.hiddenContentVisible = false
@@ -254,7 +259,13 @@ export default {
       },
       innerRef() {
         if (this.isLike) {
-          return this.item.refs[this.item['like-of']]
+          return this.item.refs[this.item['like-of']] || {
+            type: "entry",
+            content: {
+              text: 'Like of ' + this.item['like-of']
+            },
+            url: this.item['like-of'],
+          }
         } else if (this.isRepost) {
           return this.item.refs[this.item['repost-of']]
         } else if (this.isBookmark) {
@@ -310,6 +321,12 @@ export default {
           return this.currentItem.photo[0]
         }
         return false
+      },
+      photo_all() {
+        if (this.currentItem.photo && this.currentItem.photo.length > 1) {
+          return this.currentItem.photo
+        }
+        return []
       },
       photo_rest() {
         if (this.currentItem.photo && this.currentItem.photo.length > 1) {
@@ -373,6 +390,7 @@ export default {
     },
     watch: {
       item() {
+        this.mainImage = this.photo_first
         this.$nextTick(() => {
           const el = this.$refs['content-container']
           if (!el) {
