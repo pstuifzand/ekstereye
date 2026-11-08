@@ -1,6 +1,13 @@
 <template>
   <div :class="this.className">
-    <div class="timeline--item" v-for="(item, index) in items" :key="item._id"
+    <div class="timeline-filter" v-if="kinds.length > 1">
+      <button type="button" :class="{'is-active': kindFilter === 'all'}" @click="setKind('all')">All</button>
+      <button type="button" v-for="kind in kinds" :key="kind.kind"
+              :class="{'is-active': kindFilter === kind.kind}" @click="setKind(kind.kind)">
+        {{ kind.label }}<span class="count">{{ kind.count }}</span>
+      </button>
+    </div>
+    <div class="timeline--item" v-for="(item, index) in visibleItems" :key="item._id"
          :class="{'selected': index === selectedIndex}">
       <TimelineEntry ref="entries" :item="item" :is-selected="index === selectedIndex"
                      @debug="debug" @markRead="markRead(channel.uid, ...arguments)" @select="selectIndex(index)"
@@ -13,6 +20,10 @@
       <div class="level-item"><span class="timeline-status">Loading…</span></div>
     </div>
     <div class="level timeline-pager">
+      <div class="level-item" v-if="unreadCount">
+        <button class="button is-small" @click="markAllRead"
+                title="Marks the entries loaded here; older pages stay unread">Mark all read</button>
+      </div>
       <div class="level-item">
         <button class="button is-small" @click="newer" v-if="hasNewer">Newer</button>
       </div>
@@ -29,6 +40,7 @@
 <script>
   import TimelineEntry from '../components/Entry'
   import { enqueueMarkRead, flushMarkRead } from '../markRead'
+  import { entryKind, KIND_LABELS, KIND_ORDER } from '../entry-kind'
 
   export default {
     name: "Timeline",
@@ -50,7 +62,8 @@
     data() {
       return {
         state: 'new',
-        selectedIndex: -1
+        selectedIndex: -1,
+        kindFilter: 'all'
       }
     },
 
@@ -71,6 +84,25 @@
         return this.timeline.items.filter((item) => {
           return item.type === 'entry' || item.type === 'cite';
         })
+      },
+      visibleItems() {
+        if (this.kindFilter === 'all') {
+          return this.items
+        }
+        return this.items.filter((item) => entryKind(item) === this.kindFilter)
+      },
+      kinds() {
+        const counts = {}
+        this.items.forEach((item) => {
+          const kind = entryKind(item)
+          counts[kind] = (counts[kind] || 0) + 1
+        })
+        return KIND_ORDER
+          .filter((kind) => counts[kind])
+          .map((kind) => ({kind, label: KIND_LABELS[kind], count: counts[kind]}))
+      },
+      unreadCount() {
+        return this.items.filter((item) => !item._is_read).length
       }
     },
 
@@ -79,9 +111,17 @@
         this.$store.dispatch('openDebug', item)
       },
       older() {
+        this.loadMore(false)
+      },
+      loadMore(automatic) {
         // The sentinel stays in view when a page is shorter than the viewport, so guard
         // against firing another request while one is still in flight.
         if (!this.hasOlder || this.loading) {
+          return
+        }
+        // While a filter is on, a page can be all entries the filter hides; loading more
+        // because the list looks short would never end. The Older button still works.
+        if (automatic && this.kindFilter !== 'all') {
           return
         }
         this.$emit('older', {uid: this.channel.uid, after: this.timeline.paging.after})
@@ -102,7 +142,7 @@
         this.sentinelObserver = new IntersectionObserver((records) => {
           records.forEach((record) => {
             if (record.isIntersecting) {
-              this.older()
+              this.loadMore(true)
             }
           })
         }, {rootMargin: '200px'})
@@ -215,6 +255,14 @@
           event.preventDefault()
         }
       },
+      setKind(kind) {
+        this.kindFilter = kind
+        this.selectedIndex = -1
+      },
+      markAllRead() {
+        // Only what is on screen: the server has no "everything older" sweep.
+        this.items.forEach((item) => this.markRead(this.channel.uid, item))
+      },
       markRead(channel, item) {
         if (!item || item._is_read) {
           return
@@ -267,8 +315,12 @@
 
     watch: {
       timeline() {
-        // A new page of items (or a channel switch) invalidates the old selection.
+        // Appending a page keeps the filter; only the channel decides what is in it.
         this.selectedIndex = -1
+      },
+      channel() {
+        this.selectedIndex = -1
+        this.kindFilter = 'all'
       },
       items() {
         this.$nextTick(this.markSeenEntries)
@@ -294,6 +346,33 @@
 
   .timeline--item {
     scroll-margin-top: 70px;
+  }
+
+  .timeline-filter {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .timeline-filter button {
+    background: none;
+    border: 1px solid #dbdbdb;
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: .8rem;
+    color: #4a4a4a;
+    cursor: pointer;
+  }
+
+  .timeline-filter button.is-active {
+    background: #363636;
+    border-color: #363636;
+    color: #fff;
+  }
+
+  .timeline-filter .count {
+    opacity: .6;
+    margin-left: 5px;
   }
 
   .timeline-sentinel {

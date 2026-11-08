@@ -113,6 +113,7 @@
 
 <script>
 import { stamp, absoluteTime } from '@/relative-time'
+import { entryKind } from '@/entry-kind'
 import { sanitizeHtml } from '@/sanitize'
 import DestinationButtons from "@/components/DestinationButtons";
 import EntryCategories from "@/components/EntryCategories";
@@ -308,34 +309,8 @@ export default {
       niceTimeTitle() {
         return absoluteTime(this.currentItem.published)
       },
-      bodyText() {
-        const content = this.currentItem.content
-        if (!content) {
-          return ''
-        }
-        if (typeof content === 'string') {
-          return content
-        }
-        return content.text || (content.html ? content.html.replace(/<[^>]*>/g, ' ') : '')
-      },
-      hasImages() {
-        const photos = this.currentItem.photo
-        if (photos && photos.length) {
-          return true
-        }
-        return Boolean(this.currentItem.content && this.currentItem.content.html
-          && /<img\b/i.test(this.currentItem.content.html))
-      },
       kind() {
-        // A reader of both essays and check-ins needs the entry to say which it is.
-        const length = this.bodyText.trim().length
-        if (this.currentItem.name || length > 480) {
-          return 'article'
-        }
-        if (this.hasImages) {
-          return 'media'
-        }
-        return 'status'
+        return entryKind(this.currentItem)
       },
       classes() {
         return {
