@@ -44,7 +44,9 @@
         <div>
           <div class="level">
             <div class="level-item">
-              <button class="is-link" v-if="hasHiddenContent" @click.prevent.stop="toggleHiddenContent">Read more</button>
+              <button class="is-link" v-if="hasHiddenContent" @click.prevent.stop="toggleHiddenContent">
+                {{ hiddenContentVisible ? 'Show less' : 'Read more' }}
+              </button>
             </div>
             <div class="level-item">
                 <small>
@@ -138,8 +140,9 @@ export default {
         destinations: [],
         selectedDestinations: [],
         categories: [],
-        hasHiddenContent: true,
+        hasHiddenContent: false,
         hiddenContentVisible: false,
+        contentObserver: null,
         mainImage: null,
         avatarFailed: false,
       }
@@ -223,8 +226,46 @@ export default {
       },
       toggleHiddenContent() {
         this.hiddenContentVisible = !this.hiddenContentVisible
-        // const el = this.$refs['content-container']
-        // el.scrollIntoView(true)
+        this.$nextTick(this.measureHiddenContent)
+      },
+      measureHiddenContent() {
+        const el = this.$refs['content-container']
+        if (!el || this.hiddenContentVisible) {
+          // An expanded entry is always taller than its clamp, so measuring it now would
+          // report "nothing hidden" and take the toggle away.
+          return
+        }
+        this.hasHiddenContent = el.scrollHeight > el.clientHeight + 1
+      },
+      watchContentImages() {
+        const el = this.$refs['content-container']
+        if (!el) {
+          return
+        }
+        el.querySelectorAll('img').forEach((img) => {
+          if (img.complete) {
+            return
+          }
+          img.addEventListener('load', this.measureHiddenContent, {once: true})
+          img.addEventListener('error', this.measureHiddenContent, {once: true})
+        })
+      },
+      observeContent() {
+        if (!('ResizeObserver' in window)) {
+          return
+        }
+        const el = this.$refs['content-container']
+        if (!el) {
+          return
+        }
+        if (this.contentObserver) {
+          this.contentObserver.disconnect()
+        }
+        this.contentObserver = new ResizeObserver(() => this.measureHiddenContent())
+        // The clamp fixes the container's own height, so an image growing inside it never
+        // resizes the element being observed; watch the images themselves as well.
+        this.contentObserver.observe(el)
+        el.querySelectorAll('img').forEach((img) => this.contentObserver.observe(img))
       },
       replaceMainImage(newImage) {
         this.mainImage = newImage
@@ -234,11 +275,18 @@ export default {
     mounted() {
       this.mainImage = this.photo_first
       this.showFooterButtons = true
-      const el = this.$refs['content-container']
       this.hiddenContentVisible = false
       this.$nextTick(() => {
-        this.hasHiddenContent = el.scrollHeight > el.clientHeight
+        this.measureHiddenContent()
+        this.watchContentImages()
+        this.observeContent()
       })
+    },
+
+    beforeDestroy() {
+      if (this.contentObserver) {
+        this.contentObserver.disconnect()
+      }
     },
 
     computed: {
@@ -408,17 +456,11 @@ export default {
       item() {
         this.avatarFailed = false
         this.mainImage = this.photo_first
+        this.hiddenContentVisible = false
         this.$nextTick(() => {
-          const el = this.$refs['content-container']
-          if (!el) {
-            // eslint-disable-next-line
-            console.log('ref content-container not found')
-            return
-          }
-          this.hiddenContentVisible = false
-          this.$nextTick(() => {
-            this.hasHiddenContent = el.scrollHeight > el.clientHeight
-          })
+          this.measureHiddenContent()
+          this.watchContentImages()
+          this.observeContent()
         })
       }
     }
