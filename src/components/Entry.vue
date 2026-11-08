@@ -44,7 +44,7 @@
           </div>
         </div>
         <div>
-          <div class="level entry-actions">
+          <div class="level entry-actions" @click.stop>
             <div class="level-item">
               <button class="is-link" v-if="hasHiddenContent" @click.prevent.stop="toggleHiddenContent">
                 {{ hiddenContentVisible ? 'Show less' : 'Read more' }}
@@ -67,7 +67,7 @@
             </div>
           </div>
         </div>
-        <div class="media" v-if="reposting">
+        <div class="media" v-if="reposting" @click.stop>
           <div class="media-content">
             <div class="field">
               <label class="label">Repost with a note</label>
@@ -90,7 +90,7 @@
           </div>
         </div>
 
-        <div class="media" v-if="replying">
+        <div class="media" v-if="replying" @click.stop>
           <div class="media-content">
             <div class="field">
               <label class="label">Write your reply:</label>
@@ -105,7 +105,7 @@
             </div>
           </div>
         </div>
-        <div class="media" v-if="bookmarking">
+        <div class="media" v-if="bookmarking" @click.stop>
           <div class="media-content">
             <div class="field">
               <div class="control">
