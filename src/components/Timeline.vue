@@ -1,7 +1,8 @@
 <template>
   <div :class="this.className">
-    <div class="timeline--item" v-for="item in items" :key="item._id">
-      <TimelineEntry :item="item" @debug="debug" @markRead="markRead(channel.uid, ...arguments)" @followFeed="$emit('followFeed', arguments[0])"
+    <div class="timeline--item" v-for="(item, index) in items" :key="item._id"
+         :class="{'selected': index === selectedIndex}">
+      <TimelineEntry ref="entries" :item="item" @debug="debug" @markRead="markRead(channel.uid, ...arguments)" @followFeed="$emit('followFeed', arguments[0])"
                      :is-main-entry="true"/>
     </div>
     <div v-if="items.length === 0 && loggedIn && !loading">
@@ -30,12 +31,25 @@
 
   export default {
     name: "Timeline",
-    props: ['className', 'channel', 'timeline'],
+    props: {
+      className: String,
+      channel: Object,
+      timeline: {
+        type: Object,
+        required: true
+      },
+      // Only the timeline the reader is working in should claim the bare keys.
+      keyboard: {
+        type: Boolean,
+        default: false
+      }
+    },
     components: {TimelineEntry},
 
     data() {
       return {
-        state: 'new'
+        state: 'new',
+        selectedIndex: -1
       }
     },
 
@@ -93,6 +107,96 @@
         }, {rootMargin: '200px'})
         this.sentinelObserver.observe(this.$refs.sentinel)
       },
+      isTypingTarget(event) {
+        const el = event.target
+        if (!el) {
+          return false
+        }
+        const tag = (el.tagName || '').toLowerCase()
+        return tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable
+      },
+      renderedEntries() {
+        const list = this.$refs.entries
+        if (!list) {
+          return []
+        }
+        return Array.isArray(list) ? list : [list]
+      },
+      selectIndex(index) {
+        const entries = this.renderedEntries()
+        if (!entries.length) {
+          return
+        }
+        const next = Math.max(0, Math.min(entries.length - 1, index))
+        this.selectedIndex = next
+        this.$nextTick(() => {
+          const entry = entries[next]
+          if (entry && entry.$el && entry.$el.scrollIntoView) {
+            entry.$el.scrollIntoView({block: 'nearest'})
+          }
+        })
+      },
+      currentEntry() {
+        const entries = this.renderedEntries()
+        if (!entries.length) {
+          return null
+        }
+        if (this.selectedIndex < 0) {
+          this.selectIndex(0)
+          return entries[0]
+        }
+        return entries[this.selectedIndex] || null
+      },
+      handleKey(event) {
+        if (!this.keyboard || this.isTypingTarget(event) || event.ctrlKey || event.metaKey || event.altKey) {
+          return
+        }
+        let handled = true
+        switch (event.key) {
+          case 'j':
+            this.selectIndex(this.selectedIndex + 1)
+            break
+          case 'k':
+            this.selectIndex(this.selectedIndex - 1)
+            break
+          case 'o': {
+            const entry = this.currentEntry()
+            if (entry) {
+              window.open(entry.currentItem.url, '_blank', 'noopener')
+            }
+            break
+          }
+          case 'm': {
+            const entry = this.currentEntry()
+            if (entry) {
+              entry.markRead()
+            }
+            break
+          }
+          case 'r': {
+            const entry = this.currentEntry()
+            if (entry) {
+              entry.openReply()
+            }
+            break
+          }
+          case 'l': {
+            const entry = this.currentEntry()
+            if (entry) {
+              entry.like()
+            }
+            break
+          }
+          case 'Escape':
+            this.selectedIndex = -1
+            break
+          default:
+            handled = false
+        }
+        if (handled) {
+          event.preventDefault()
+        }
+      },
       markRead(channel, item) {
         if (!item || item._is_read) {
           return
@@ -138,11 +242,16 @@
 
     mounted() {
       window.addEventListener('scroll', this.scheduleSeenCheck, {passive: true})
+      window.addEventListener('keydown', this.handleKey)
       this.$nextTick(this.markSeenEntries)
       this.$nextTick(this.observeSentinel)
     },
 
     watch: {
+      timeline() {
+        // A new page of items (or a channel switch) invalidates the old selection.
+        this.selectedIndex = -1
+      },
       items() {
         this.$nextTick(this.markSeenEntries)
         this.$nextTick(this.observeSentinel)
@@ -151,6 +260,7 @@
 
     beforeDestroy() {
       window.removeEventListener('scroll', this.scheduleSeenCheck)
+      window.removeEventListener('keydown', this.handleKey)
       if (this.sentinelObserver) {
         this.sentinelObserver.disconnect()
       }
@@ -162,6 +272,14 @@
 <style scoped>
   .timeline--item {
     margin-bottom: 16px;
+  }
+
+  .timeline--item {
+    scroll-margin-top: 70px;
+  }
+
+  .timeline--item.selected .entry {
+    box-shadow: 0 0 0 2px #363636;
   }
 
   .timeline-sentinel {

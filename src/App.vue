@@ -39,12 +39,16 @@
     name: 'App',
     components: {LoginModal},
     mounted() {
+      window.addEventListener('keydown', this.handleKey)
       let item = window.localStorage.getItem('login_data');
       if (item) {
         let loginData = JSON.parse(item)
         this.$store.dispatch('isLoggedIn', loginData)
         this.$store.dispatch('startEventListening', '?action=events')
       }
+    },
+    beforeDestroy() {
+      window.removeEventListener('keydown', this.handleKey)
     },
     computed: {
       menuActive() {
@@ -73,6 +77,23 @@
       signOut () {
         this.$store.dispatch('logout')
         this.$router.push('/')
+      },
+      handleKey (event) {
+        const el = event.target
+        const tag = el && el.tagName ? el.tagName.toLowerCase() : ''
+        if (tag === 'input' || tag === 'textarea' || tag === 'select' || (el && el.isContentEditable)) {
+          return
+        }
+        if (event.ctrlKey || event.metaKey || event.altKey) {
+          return
+        }
+        if (event.key === 's') {
+          event.preventDefault()
+          this.openSearch()
+        } else if (event.key === 'Escape') {
+          this.$store.dispatch('closeSearch')
+          this.$store.dispatch('closeChannelCreator')
+        }
       }
     }
   }

@@ -51,12 +51,12 @@
             <div class="level-item">
                 <small>
                 <span v-if="showFooterButtons">
-                <a @click="like">Like</a>
-                &middot; <a @click.prevent="openReply">Reply</a>
-                &middot; <a @click.prevent="repost">Repost</a>
-                &middot; <a @click.prevent="openBookmark">Bookmark</a>
-                &middot; <a @click.prevent="$emit('followFeed', author_url)" title="Try to follow the feed this item comes from">Follow</a>
-                &middot; <a @click.prevent="debug">Debug</a>
+                <button type="button" class="entry-action" @click="like">Like</button>
+                &middot; <button type="button" class="entry-action" @click.prevent="openReply">Reply</button>
+                &middot; <button type="button" class="entry-action" @click.prevent="repost">Repost</button>
+                &middot; <button type="button" class="entry-action" @click.prevent="openBookmark">Bookmark</button>
+                &middot; <button type="button" class="entry-action" @click.prevent="$emit('followFeed', author_url)" title="Try to follow the feed this item comes from">Follow</button>
+                &middot; <button type="button" class="entry-action" @click.prevent="debug">Debug</button>
                 </span>
                 </small>
             </div>
@@ -67,7 +67,7 @@
             <div class="field">
               <label class="label">Write your reply:</label>
               <div class="control">
-                <textarea class="textarea" v-model="replyText"></textarea>
+                <textarea class="textarea" ref="replyText" v-model="replyText"></textarea>
               </div>
             </div>
             <div class="field">
@@ -154,6 +154,11 @@ export default {
       },
       openReply() {
         this.replying = true
+        this.$nextTick(() => {
+          if (this.$refs.replyText) {
+            this.$refs.replyText.focus()
+          }
+        })
       },
       markRead() {
         this.$emit('markRead', this.item)
@@ -470,6 +475,21 @@ export default {
 <style scoped>
   .entry.unread {
     outline: 2px solid #5757e8;
+  }
+
+  .entry-action {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .entry-action:focus-visible {
+    outline: 2px solid #5757e8;
+    outline-offset: 2px;
   }
 
   .media .entry {

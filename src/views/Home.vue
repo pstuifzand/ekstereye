@@ -23,7 +23,7 @@
         </div>
       </div>
       <new-post class="mt-20" v-if="showPost" @close="showPost = false"></new-post>
-      <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="channel"
+      <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="channel" :keyboard="true"
                 @older="loadOlder" @newer="loadNewer" @followFeed="openFeedFollower(arguments[0])"></Timeline>
     </div>
 
@@ -131,6 +131,20 @@
       },
       showChannels () {
         this.channelsVisible = !this.channelsVisible
+      },
+      handleKey (event) {
+        const el = event.target
+        const tag = el && el.tagName ? el.tagName.toLowerCase() : ''
+        if (tag === 'input' || tag === 'textarea' || tag === 'select' || (el && el.isContentEditable)) {
+          return
+        }
+        if (event.ctrlKey || event.metaKey || event.altKey) {
+          return
+        }
+        if (event.key === 'g') {
+          event.preventDefault()
+          this.showChannels()
+        }
       }
     },
 
@@ -153,7 +167,12 @@
     },
 
     mounted() {
+      window.addEventListener('keydown', this.handleKey)
       this.load()
+    },
+
+    beforeDestroy() {
+      window.removeEventListener('keydown', this.handleKey)
     }
   }
 </script>
