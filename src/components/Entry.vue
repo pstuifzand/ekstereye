@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div :class="classes" @click="markRead">
+    <div :class="classes" @click="markRead(); $emit('select')">
       <div class="card-image" v-if="mainImage">
         <figure class="image">
           <img :src="mainImage" loading="lazy" decoding="async" alt=""/>
@@ -125,7 +125,7 @@ export default {
       EntryCategories,
       SyndicationButtons
     },
-    props: ['item'],
+    props: ['item', 'isSelected'],
 
     data() {
       return {
@@ -313,7 +313,8 @@ export default {
           'entry': true,
           'card': true,
           'mb-20': true,
-          'unread': !this.item._is_read
+          'unread': !this.item._is_read,
+          'selected': Boolean(this.isSelected)
         }
       },
       innerRef() {
@@ -475,6 +476,13 @@ export default {
 <style scoped>
   .entry.unread {
     outline: 2px solid #5757e8;
+  }
+
+  /* Keyboard selection: neutral bar and ring, so hue always means "unread" (blue)
+     and the selected card is read by shape instead. */
+  .entry.selected {
+    box-shadow: inset 5px 0 0 0 #363636, 0 0 0 3px #363636;
+    background: #f6f6f8;
   }
 
   .entry-action {

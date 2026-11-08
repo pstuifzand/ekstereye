@@ -2,8 +2,9 @@
   <div :class="this.className">
     <div class="timeline--item" v-for="(item, index) in items" :key="item._id"
          :class="{'selected': index === selectedIndex}">
-      <TimelineEntry ref="entries" :item="item" @debug="debug" @markRead="markRead(channel.uid, ...arguments)" @followFeed="$emit('followFeed', arguments[0])"
-                     :is-main-entry="true"/>
+      <TimelineEntry ref="entries" :item="item" :is-selected="index === selectedIndex"
+                     @debug="debug" @markRead="markRead(channel.uid, ...arguments)" @select="selectIndex(index)"
+                     @followFeed="$emit('followFeed', arguments[0])" :is-main-entry="true"/>
     </div>
     <div v-if="items.length === 0 && loggedIn && !loading">
       <p class="text-center">No items in this timeline</p>
@@ -276,10 +277,6 @@
 
   .timeline--item {
     scroll-margin-top: 70px;
-  }
-
-  .timeline--item.selected .entry {
-    box-shadow: 0 0 0 2px #363636;
   }
 
   .timeline-sentinel {
