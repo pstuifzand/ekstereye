@@ -24,7 +24,7 @@
           </div>
         </div>
 
-        <div class="timeline--item" v-for="item in searchItems" :key="item.id">
+        <div class="timeline--item" v-for="item in searchItems" :key="item._id">
           <TimelineEntry :item="item" :is-main-entry="true" @debug="debug" />
         </div>
       </div>

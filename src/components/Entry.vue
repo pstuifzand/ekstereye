@@ -23,7 +23,7 @@
             <div>
               <div><a :href="author_url">{{ author_name }}</a>
                 &middot;
-                <a :href="currentItem.url" target="_new"><span class="published" v-html="niceTime"></span></a>
+                <a :href="currentItem.url" target="_new" :title="niceTimeTitle"><span class="published">{{ niceTime }}</span></a>
               </div>
 
               <h3 class="title is-6" v-if="currentItem.name" v-text="currentItem.name"></h3>
@@ -106,7 +106,7 @@
 </template>
 
 <script>
-import dayjs from 'dayjs'
+import { fromNow, absoluteTime } from '@/relative-time'
 import DestinationButtons from "@/components/DestinationButtons";
 import EntryCategories from "@/components/EntryCategories";
 import SyndicationButtons from "@/components/SyndicationButtons";
@@ -244,10 +244,10 @@ export default {
         }
       },
       niceTime() {
-        return dayjs(this.item.published).fromNow()
+        return fromNow(this.currentItem.published)
       },
-      refNiceTime() {
-        return dayjs(this.innerRef.published).fromNow()
+      niceTimeTitle() {
+        return absoluteTime(this.currentItem.published)
       },
       classes() {
         return {

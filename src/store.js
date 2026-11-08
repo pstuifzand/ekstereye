@@ -6,6 +6,23 @@ import _ from "lodash"
 
 Vue.use(Vuex)
 
+// Microsub items never carry _is_read, and assigning it to an item that came out of
+// JSON is invisible to Vue 2 (properties added after the fact are not reactive), so the
+// unread outline would never repaint. Define it as a reactive property at ingest.
+function normalizeItem(item) {
+  if (item && typeof item === 'object' && !Array.isArray(item)) {
+    Vue.set(item, '_is_read', Boolean(item._is_read))
+  }
+  return item
+}
+
+function normalizeTimeline(timeline) {
+  if (timeline && Array.isArray(timeline.items)) {
+    timeline.items.forEach(normalizeItem)
+  }
+  return timeline
+}
+
 export default new Vuex.Store({
   state() {
     let newState = {
@@ -45,7 +62,7 @@ export default new Vuex.Store({
       // find the channel matching the selected uid
       channel = _.find(state.channels, item => item.uid === channel.uid)
       state.channel = channel
-      state.timeline = timeline
+      state.timeline = normalizeTimeline(timeline)
     },
     newAccessToken(state, {me, access_token, scope}) {
       state.logged_in = true
@@ -100,10 +117,16 @@ export default new Vuex.Store({
       state.eventSource.addEventListener('new item', evt => {
         try {
           let newItemMsg = JSON.parse(evt.data)
+          const item = normalizeItem(newItemMsg.item)
+          const uid = item && item._id
           if (state.channel.uid === newItemMsg.channel) {
-            state.timeline.items = [newItemMsg.item, ...state.timeline.items]
+            if (!uid || !_.some(state.timeline.items, it => it._id === uid)) {
+              state.timeline.items = [item, ...state.timeline.items]
+            }
           }
-          state.globalTimeline.items = _.takeRight([...state.globalTimeline.items, newItemMsg.item], 10)
+          if (!uid || !_.some(state.globalTimeline.items, it => it._id === uid)) {
+            state.globalTimeline.items = _.takeRight([...state.globalTimeline.items, item], 10)
+          }
         } catch (e) {
           // eslint-disable-next-line
           console.log(e)
@@ -139,7 +162,7 @@ export default new Vuex.Store({
       })
     },
     newSearchResults(state, items) {
-      state.searchItems = items
+      state.searchItems = (items || []).map(normalizeItem)
     },
     openDebugPopup(state, item) {
       state.debugItem = item
@@ -155,7 +178,7 @@ export default new Vuex.Store({
 
   actions: {
     fetchChannels({commit}) {
-      fetch(this.state.microsubEndpoint + '?action=channels', {
+      return fetch(this.state.microsubEndpoint + '?action=channels', {
         headers: {
           'Authorization': 'Bearer ' + this.state.access_token
         }
@@ -179,7 +202,7 @@ export default new Vuex.Store({
       if (channel.before) {
         url += '&before=' + channel.before;
       }
-      fetch(url, {
+      return fetch(url, {
         headers: {
           'Authorization': 'Bearer ' + this.state.access_token
         }
@@ -187,6 +210,7 @@ export default new Vuex.Store({
         .then(response => response.json())
         .then(response => {
           commit('newTimeline', {channel: channel, timeline: response})
+          return response
         })
     },
     saveEndpoints({commit}, endpoints) {

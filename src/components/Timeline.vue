@@ -1,6 +1,6 @@
 <template>
   <div :class="this.className">
-    <div class="timeline--item" v-for="item in items" :key="item.id">
+    <div class="timeline--item" v-for="item in items" :key="item._id">
       <TimelineEntry :item="item" @debug="debug" @markRead="markRead(channel.uid, ...arguments)" @followFeed="$emit('followFeed', arguments[0])"
                      :is-main-entry="true"/>
     </div>
@@ -55,7 +55,7 @@
       markRead(channel, item) {
         return this.$store.dispatch('markRead', {channel: channel, entry: item._id})
           .then(() => {
-            item._is_read = true
+            this.$set(item, '_is_read', true)
           }).then(() => {
             // this.$store.dispatch('fetchChannels')
           })

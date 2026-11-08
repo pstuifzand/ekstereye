@@ -1,6 +1,6 @@
 <template>
     <div class="short-timeline">
-        <div class="box small-item" style="margin-bottom: 4px" v-for="(item, i) in timeline.items" :key="i">
+        <div class="box small-item" style="margin-bottom: 4px" v-for="item in timeline.items" :key="item._id">
             <div class="name" v-text="text(item)"></div>
             <div class="time" v-text="niceTime(item)"></div>
             <div v-text="author_name(item)"></div>
@@ -9,7 +9,7 @@
 </template>
 
 <script>
-    import dayjs from "dayjs";
+    import { fromNow } from "@/relative-time";
 
     export default {
         name: "ShortTimeline",
@@ -29,7 +29,7 @@
                 return '';
             },
             niceTime(item) {
-                return dayjs(item.published).fromNow()
+                return fromNow(item.published)
             }
         }
     }
