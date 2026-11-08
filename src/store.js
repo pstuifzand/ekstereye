@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import Micropub from 'micropub-helper';
 import { EventSourcePolyfill } from 'event-source-polyfill'
 import _ from "lodash"
+import { setMarkReadSender } from './markRead'
 
 Vue.use(Vuex)
 
@@ -23,7 +24,7 @@ function normalizeTimeline(timeline) {
   return timeline
 }
 
-export default new Vuex.Store({
+const store = new Vuex.Store({
   state() {
     let newState = {
       channels: [],
@@ -226,13 +227,14 @@ export default new Vuex.Store({
       console.log(response)
       commit('newAccessToken', response)
     },
-    markRead(x, {channel, entry}) {
+    markRead(x, {channel, entry, keepalive}) {
       const entries = Array.isArray(entry)
         ? _(entry).map(uid => '&entry[]=' + encodeURIComponent(uid)).join("")
         : '&entry=' + encodeURIComponent(entry)
       let url = this.state.microsubEndpoint + '?action=timeline&method=mark_read&channel=' + encodeURIComponent(channel) + entries;
       return fetch(url, {
         method: 'POST',
+        keepalive: Boolean(keepalive),
         headers: {
           'Authorization': 'Bearer ' + this.state.access_token
         }
@@ -323,26 +325,6 @@ export default new Vuex.Store({
         this.dispatch('fetchChannels')
       })
     },
-    bottomReached() {
-      // eslint-disable-next-line
-      console.log('bottomReached')
-
-      let items = this.state.timeline.items
-      // eslint-disable-next-line
-      console.log(items)
-      let uids = _(items).reject('_is_read').map('_id').value()
-      // eslint-disable-next-line
-      console.log(uids)
-
-      items.forEach((item) => {
-        if (item && !item._is_read) {
-          item._is_read = true
-        }
-      })
-      if (uids.length > 0) {
-        return this.dispatch('markRead', {channel: this.state.channel.uid, 'entry': uids})
-      }
-    },
     startEventListening({commit}, url) {
       return commit('createEventSource', url)
     },
@@ -357,3 +339,9 @@ export default new Vuex.Store({
     }
   }
 })
+
+// The queue module owns the batching and the flush-on-hide; the store owns the request.
+setMarkReadSender((channel, uids, options) =>
+  store.dispatch('markRead', {channel: channel, entry: uids, keepalive: options.keepalive}))
+
+export default store

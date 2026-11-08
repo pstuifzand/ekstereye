@@ -94,9 +94,11 @@ Problem: `Timeline.handleScroll` (Timeline.vue:63-83) loops `$children` calling
 2. Gate: confirm the live Microsub endpoint accepts the bracketed `entry[]=` form. That is
    a server quirk visible only in client code — verify with a real request before merging,
    and fall back to repeated `entry=…` params if it does not.
-3. Replace the per-child rect loop with one `IntersectionObserver` per timeline
-   (`rootMargin: -100px 0 0 0`), disconnect in `beforeDestroy`, re-observe on `items`
-   change.
+3. Replace the per-child rect loop with an rAF-throttled, early-exiting pass: entries are
+   in feed order, so walk from the first unread entry and stop at the first one still
+   visible. An `IntersectionObserver` was tried and dropped — on a jump (fast scroll,
+   "end" key, programmatic scroll) entries go from *below* the viewport to *above* it
+   without ever intersecting, so no threshold crossing fires and they stay unread.
 4. A `<div ref="sentinel">` after the list owns "bottom reached"; strip the
    mark-everything-read semantics out of `bottomReached` (store.js:302-321).
 5. Remove the blue outline locally on enqueue (reactive via Phase 3a's normalization). No

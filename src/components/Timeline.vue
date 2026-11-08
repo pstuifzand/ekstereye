@@ -20,6 +20,7 @@
 
 <script>
   import TimelineEntry from '../components/Entry'
+  import { enqueueMarkRead, flushMarkRead } from '../markRead'
 
   export default {
     name: "Timeline",
@@ -53,42 +54,61 @@
         this.$emit('getPage', {uid: this.channel.uid, before: this.timeline.paging.before})
       },
       markRead(channel, item) {
-        return this.$store.dispatch('markRead', {channel: channel, entry: item._id})
-          .then(() => {
-            this.$set(item, '_is_read', true)
-          }).then(() => {
-            // this.$store.dispatch('fetchChannels')
-          })
-      },
-      handleScroll() {
-        // let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
-        let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight >= this.$el.offsetHeight + document.documentElement.offsetHeight
-        if (bottomOfWindow) {
-          this.$store.dispatch('bottomReached')
+        if (!item || item._is_read) {
           return
         }
-
-        this.$children.forEach((child) => {
-          let rect = child.$el.getBoundingClientRect()
-          if (rect.top + rect.height < 100) {
-            if (child.$props.item && !child.$props.item._is_read) {
-              child.$props.item._is_read = true
-              let item = child.$props.item
-              this.markRead(this.channel.uid, item).then(() => {
-                // this.$store.dispatch('fetchChannels')
-              })
-            }
+        // Clear the outline now, send the request with the next batch.
+        this.$set(item, '_is_read', true)
+        enqueueMarkRead(channel, item._id)
+      },
+      markSeenEntries() {
+        // Entries are rendered in feed order, so walk from the first unread one and stop
+        // at the first entry that is still visible. Reads stop at that boundary instead
+        // of touching every card on every frame.
+        const channel = this.channel && this.channel.uid
+        const children = this.$children
+        for (let i = 0; i < children.length; i += 1) {
+          const child = children[i]
+          const item = child.$props.item
+          if (!item || item._is_read || !child.$el) {
+            continue
           }
+          if (child.$el.getBoundingClientRect().bottom > 100) {
+            break
+          }
+          this.markRead(channel, item)
+        }
+      },
+      scheduleSeenCheck() {
+        if (this.checkScheduled) {
+          return
+        }
+        this.checkScheduled = true
+        window.requestAnimationFrame(() => {
+          this.checkScheduled = false
+          this.markSeenEntries()
         })
       }
     },
 
     created() {
-      window.addEventListener('scroll', this.handleScroll);
+      this.checkScheduled = false
+    },
+
+    mounted() {
+      window.addEventListener('scroll', this.scheduleSeenCheck, {passive: true})
+      this.$nextTick(this.markSeenEntries)
+    },
+
+    watch: {
+      items() {
+        this.$nextTick(this.markSeenEntries)
+      }
     },
 
     beforeDestroy() {
-      window.removeEventListener('scroll', this.handleScroll);
+      window.removeEventListener('scroll', this.scheduleSeenCheck)
+      flushMarkRead()
     }
   }
 </script>

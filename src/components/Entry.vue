@@ -41,7 +41,7 @@
         <div>
           <div class="level">
             <div class="level-item">
-              <button class="is-link" v-if="hasHiddenContent" @click.prevent="toggleHiddenContent">Read more</button>
+              <button class="is-link" v-if="hasHiddenContent" @click.prevent.stop="toggleHiddenContent">Read more</button>
             </div>
             <div class="level-item">
                 <small>
