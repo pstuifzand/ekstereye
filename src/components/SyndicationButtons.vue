@@ -31,13 +31,29 @@ export default {
 }
 </script>
 <style scoped>
-
 .tag {
   cursor: pointer;
+  background: var(--button-bg, #fff);
+  border: 1px solid var(--button-border, #dbdbdb);
+  color: var(--fg, #363636);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: .8rem;
+  user-select: none;
+}
+
+.tag:hover {
+  border-color: var(--muted, #7a7a7a);
 }
 
 .cb-target:checked + .tag {
-  background-color: #23d160;
+  background: var(--accent, #5757e8);
+  border-color: var(--accent, #5757e8);
   color: #fff;
+}
+
+.cb-target:focus-visible + .tag {
+  outline: 2px solid var(--accent, #5757e8);
+  outline-offset: 2px;
 }
 </style>

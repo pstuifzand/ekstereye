@@ -28,7 +28,9 @@
                 <a :href="currentItem.url" target="_new" :title="niceTimeTitle"><span class="published">{{ niceTime }}</span></a>
               </div>
 
-              <h3 class="title is-6" v-if="currentItem.name" v-text="currentItem.name"></h3>
+              <h3 class="title is-6" v-if="currentItem.name">
+                <a :href="currentItem.url" target="_blank" rel="noopener noreferrer" v-text="currentItem.name"></a>
+              </h3>
               <div class="content html-body" v-if="main_content_html" v-html="main_content_html"></div>
               <div class="content html-body is-pre" v-else-if="main_content_text" v-text="main_content_text"></div>
 
@@ -53,8 +55,9 @@
                 <span v-if="showFooterButtons">
                 <button type="button" class="entry-action" @click="like">Like</button>
                 &middot; <button type="button" class="entry-action" @click.prevent="openReply">Reply</button>
-                &middot; <button type="button" class="entry-action" @click.prevent="repost">Repost</button>
+                &middot; <button type="button" class="entry-action" @click.prevent="openRepost">Repost</button>
                 &middot; <button type="button" class="entry-action" @click.prevent="openBookmark">Bookmark</button>
+                &middot; <button type="button" class="entry-action" @click.prevent.stop="copyLink">{{ copied ? 'Copied' : 'Copy link' }}</button>
                 &middot; <button type="button" class="entry-action" @click.prevent="$emit('followFeed', author_url)" title="Try to follow the feed this item comes from">Follow</button>
                 <template v-if="debugEnabled">
                   &middot; <button type="button" class="entry-action" @click.prevent="debug">Debug</button>
@@ -64,6 +67,29 @@
             </div>
           </div>
         </div>
+        <div class="media" v-if="reposting">
+          <div class="media-content">
+            <div class="field">
+              <label class="label">Repost with a note</label>
+              <div class="control">
+                <textarea class="textarea" ref="repostText" v-model="repostNote"></textarea>
+              </div>
+            </div>
+            <div class="field">
+              Syndication: <syndication-buttons v-model="selected" :targets="targets"/>
+            </div>
+            <div class="field">
+              Destination: <destination-buttons v-model="selectedDestinations" :targets="destinations"/>
+            </div>
+            <div class="field">
+              <div class="control">
+                <button class="button is-primary" @click="repost">Repost</button>
+                <button class="button" @click="reposting = false">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="media" v-if="replying">
           <div class="media-content">
             <div class="field">
@@ -136,6 +162,10 @@ export default {
         'replying': false,
         'replyText': '',
         'showFooterButtons': true,
+        reposting: false,
+        repostNote: '',
+        copied: false,
+        copyTimer: null,
         bookmarking: false,
         bookmarkTitle: '',
         bookmarkDescription: '',
@@ -187,13 +217,67 @@ export default {
           },
         })
       },
+      openRepost() {
+        this.reposting = true
+        this.repostNote = ''
+        this.selected = []
+        this.selectedDestinations = []
+        this.$store.dispatch('fetchSyndicationTargets')
+          .then((res) => { this.targets = res['syndicate-to'] || [] })
+        this.$store.dispatch('fetchDestinations')
+          .then((res) => { this.destinations = res['destination'] || [] })
+        this.$nextTick(() => {
+          if (this.$refs.repostText) {
+            this.$refs.repostText.focus()
+          }
+        })
+      },
       repost() {
+        const properties = {
+          'repost-of': [this.currentItem.url],
+          'mp-syndicate-to': this.selected,
+          'mp-destination': this.selectedDestinations
+        }
+        if (this.repostNote) {
+          properties.content = [this.repostNote]
+        }
         this.$store.dispatch('micropubPost', {
           'type': ['h-entry'],
-          'properties': {
-            'repost-of': [this.currentItem.url]
-          },
+          'properties': properties,
+        }).then(() => {
+          this.repostNote = ''
+          this.selected = []
+          this.selectedDestinations = []
+          this.reposting = false
         })
+      },
+      copyLink() {
+        const url = this.currentItem.url
+        const done = () => {
+          this.copied = true
+          window.clearTimeout(this.copyTimer)
+          this.copyTimer = window.setTimeout(() => { this.copied = false }, 1500)
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done).catch(() => this.copyFallback(url, done))
+        } else {
+          this.copyFallback(url, done)
+        }
+      },
+      copyFallback(url, done) {
+        const field = document.createElement('textarea')
+        field.value = url
+        field.setAttribute('readonly', 'readonly')
+        field.style.position = 'fixed'
+        field.style.opacity = '0'
+        document.body.appendChild(field)
+        field.select()
+        try {
+          document.execCommand('copy')
+          done()
+        } finally {
+          document.body.removeChild(field)
+        }
       },
       openBookmark() {
         this.bookmarking = true
@@ -597,6 +681,15 @@ export default {
     line-height: 1.3;
     margin: .35rem 0 .6rem;
   }
+
+  .title a {
+    color: inherit;
+  }
+
+  .title a:hover {
+    text-decoration: underline;
+  }
+
 
   .kind-article .html-body {
     max-width: 68ch;
