@@ -7,12 +7,16 @@
         {{ kind.label }}<span class="count">{{ kind.count }}</span>
       </button>
     </div>
-    <div class="timeline--item" v-for="(item, index) in visibleItems" :key="item._id"
-         :class="{'selected': index === selectedIndex}">
-      <TimelineEntry ref="entries" :item="item" :is-selected="index === selectedIndex"
-                     @debug="debug" @markRead="markRead(channel.uid, ...arguments)" @select="selectIndex(index)"
-                     @followFeed="$emit('followFeed', arguments[0])" :is-main-entry="true"/>
-    </div>
+    <template v-for="(item, index) in visibleItems">
+      <div class="timeline-new" v-if="item._id === newSinceId" :key="'new-' + item._id">
+        <span>New since your last visit</span>
+      </div>
+      <div class="timeline--item" :key="item._id" :class="{'selected': index === selectedIndex}">
+        <TimelineEntry ref="entries" :item="item" :is-selected="index === selectedIndex"
+                       @debug="debug" @markRead="markRead(channel.uid, ...arguments)" @select="selectIndex(index)"
+                       @followFeed="$emit('followFeed', arguments[0])" :is-main-entry="true"/>
+      </div>
+    </template>
     <div v-if="items.length === 0 && loggedIn && !loading">
       <p class="text-center">No items in this timeline</p>
     </div>
@@ -63,7 +67,8 @@
       return {
         state: 'new',
         selectedIndex: -1,
-        kindFilter: 'all'
+        kindFilter: 'all',
+        newSinceId: null
       }
     },
 
@@ -255,6 +260,17 @@
           event.preventDefault()
         }
       },
+      snapshotNewSince() {
+        // Where the unread run begins, taken once when the channel loads: marking items
+        // read as you scroll must not move the line.
+        if (this.newSinceId !== null) {
+          return
+        }
+        const index = this.items.findIndex((item) => !item._is_read)
+        if (index > 0) {
+          this.newSinceId = this.items[index]._id
+        }
+      },
       setKind(kind) {
         this.kindFilter = kind
         this.selectedIndex = -1
@@ -317,10 +333,13 @@
       timeline() {
         // Appending a page keeps the filter; only the channel decides what is in it.
         this.selectedIndex = -1
+        this.snapshotNewSince()
       },
       channel() {
         this.selectedIndex = -1
         this.kindFilter = 'all'
+        this.newSinceId = null
+        this.snapshotNewSince()
       },
       items() {
         this.$nextTick(this.markSeenEntries)
@@ -346,6 +365,30 @@
 
   .timeline--item {
     scroll-margin-top: 70px;
+  }
+
+  .timeline-new {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 12px;
+    font-size: .72rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted, #7a7a7a);
+  }
+
+  .timeline-new::before,
+  .timeline-new::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--accent, #5757e8);
+    opacity: .35;
+  }
+
+  .timeline-new span {
+    white-space: nowrap;
   }
 
   .timeline-filter {

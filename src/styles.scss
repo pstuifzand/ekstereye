@@ -1,5 +1,48 @@
 //@import 'bulmaswatch.min.css';
 
+:root {
+  --font-scale: 1;
+  --bg: #ffffff;
+  --fg: #2f2f2f;
+  --muted: #7a7a7a;
+  --line: #e4e4e4;
+  --card: #ffffff;
+  --sel: #f4f4f6;
+  --sel-bar: #363636;
+  --accent: #5757e8;
+  --nav-bg: #ffffff;
+  --nav-fg: #2f2f2f;
+  --button-bg: #ffffff;
+  --button-fg: #363636;
+  --button-border: #dbdbdb;
+}
+
+body.theme-dark {
+  --bg: #121212;
+  --fg: #e6e6e6;
+  --muted: #9d9d9d;
+  --line: #2b2b2b;
+  --card: #1a1a1a;
+  --sel: #24242a;
+  --sel-bar: #cfcfcf;
+  --accent: #9a9aff;
+  --nav-bg: #1a1a1a;
+  --nav-fg: #f0f0f0;
+  --button-bg: #242424;
+  --button-fg: #e6e6e6;
+  --button-border: #3a3a3a;
+}
+
+/* Everything in the app is sized in rem, so one number scales the whole reader. */
+html {
+  font-size: calc(16px * var(--font-scale));
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
 .mb-20 {
   margin-bottom: 20px;
 }
@@ -13,4 +56,108 @@
   text-align: center;
 }
 
+/* Bulma's surfaces, in the reader's colours rather than Bulma's. */
+.card,
+.box,
+.modal-card {
+  background: var(--card);
+  color: var(--fg);
+}
 
+.navbar {
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--line);
+}
+
+.navbar,
+.navbar-item,
+.navbar a {
+  color: var(--nav-fg);
+}
+
+.navbar-item:hover,
+.navbar-item:focus {
+  background: var(--sel);
+  color: var(--nav-fg);
+}
+
+.title,
+.subtitle,
+.label,
+.content,
+strong {
+  color: var(--fg);
+}
+
+a {
+  color: var(--accent);
+}
+
+.button {
+  background: var(--button-bg);
+  border-color: var(--button-border);
+  color: var(--button-fg);
+}
+
+.button:hover:not([disabled]) {
+  border-color: var(--muted);
+  color: var(--fg);
+}
+
+.button.is-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+body.theme-dark .button.is-white,
+body.theme-dark .button.is-light {
+  background: var(--button-bg);
+  border-color: var(--button-border);
+  color: var(--button-fg);
+}
+
+.input,
+.textarea,
+.select select {
+  background: var(--button-bg);
+  border-color: var(--button-border);
+  color: var(--fg);
+}
+
+.notification {
+  background: var(--sel);
+  color: var(--fg);
+}
+
+.notification.is-danger {
+  background: #4a1f1f;
+  color: #f5d0d0;
+}
+
+/* Feed HTML arrives with its own idea of colour. */
+.content blockquote {
+  background: var(--sel);
+  border-left-color: var(--line);
+  color: var(--fg);
+}
+
+.content pre,
+.content code {
+  background: var(--sel);
+  color: var(--fg);
+}
+
+.content table th,
+.content table td {
+  border-color: var(--line);
+  color: var(--fg);
+}
+
+.content hr {
+  background: var(--line);
+}
+
+body.theme-dark img {
+  opacity: .92;
+}

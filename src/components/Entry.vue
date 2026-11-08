@@ -56,7 +56,9 @@
                 &middot; <button type="button" class="entry-action" @click.prevent="repost">Repost</button>
                 &middot; <button type="button" class="entry-action" @click.prevent="openBookmark">Bookmark</button>
                 &middot; <button type="button" class="entry-action" @click.prevent="$emit('followFeed', author_url)" title="Try to follow the feed this item comes from">Follow</button>
-                &middot; <button type="button" class="entry-action" @click.prevent="debug">Debug</button>
+                <template v-if="debugEnabled">
+                  &middot; <button type="button" class="entry-action" @click.prevent="debug">Debug</button>
+                </template>
                 </span>
                 </small>
             </div>
@@ -114,6 +116,7 @@
 <script>
 import { stamp, absoluteTime } from '@/relative-time'
 import { entryKind } from '@/entry-kind'
+import { preferences } from '@/preferences'
 import { sanitizeHtml } from '@/sanitize'
 import DestinationButtons from "@/components/DestinationButtons";
 import EntryCategories from "@/components/EntryCategories";
@@ -312,6 +315,9 @@ export default {
       kind() {
         return entryKind(this.currentItem)
       },
+      debugEnabled() {
+        return preferences.debug
+      },
       classes() {
         return {
           'entry': true,
@@ -484,14 +490,14 @@ export default {
 
 <style scoped>
   .entry.unread {
-    outline: 2px solid #5757e8;
+    outline: 2px solid var(--accent, #5757e8);
   }
 
   /* Keyboard selection: neutral bar and ring, so hue always means "unread" (blue)
      and the selected card is read by shape instead. */
   .entry.selected {
-    --entry-bg: #f6f6f8;
-    box-shadow: inset 5px 0 0 0 #363636, 0 0 0 3px #363636;
+    --entry-bg: var(--sel, #f4f4f6);
+    box-shadow: inset 5px 0 0 0 var(--sel-bar, #363636), 0 0 0 3px var(--sel-bar, #363636);
     background: var(--entry-bg);
   }
 
@@ -506,7 +512,7 @@ export default {
   }
 
   .entry-action:focus-visible {
-    outline: 2px solid #5757e8;
+    outline: 2px solid var(--accent, #5757e8);
     outline-offset: 2px;
   }
 
@@ -525,13 +531,13 @@ export default {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: #eef0f6;
-    color: #5757e8;
+    background: var(--sel, #eef0f6);
+    color: var(--accent, #5757e8);
     font-weight: 600;
   }
 
   .photo.active img {
-    outline: 2px solid #5757e8;
+    outline: 2px solid var(--accent, #5757e8);
   }
 
   .photos {
@@ -553,7 +559,7 @@ export default {
   }
 
   .entry {
-    --entry-bg: #fff;
+    --entry-bg: var(--card, #fff);
   }
 
   .content-container {
@@ -582,7 +588,7 @@ export default {
     right: 0;
     bottom: 0;
     height: 2.5rem;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), var(--entry-bg));
+    background: linear-gradient(to bottom, transparent, var(--entry-bg));
     pointer-events: none;
   }
 

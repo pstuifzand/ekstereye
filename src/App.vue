@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <nav id="nav" class="navbar is-primary is-fixed-top">
+    <nav id="nav" class="navbar is-fixed-top">
       <div class="container">
         <div class="navbar-brand">
           <router-link to="/" class="navbar-item">Ekster</router-link>
@@ -13,9 +13,14 @@
         </div>
         <div :class="{'navbar-menu':true,'is-active':menuActive}">
           <div class="navbar-end">
-            <div class="buttons">
-              <button class="button is-light" @click="openSearch">Search</button>
-              <button class="button is-light" v-if="loggedIn" :title="me" @click="signOut">Sign out</button>
+            <div class="buttons reader-controls">
+              <button class="button" @click="cycleTheme" :title="theme === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'">
+                {{ theme === 'dark' ? 'Light' : 'Dark' }}
+              </button>
+              <button class="button" @click="smaller" title="Smaller text">A&minus;</button>
+              <button class="button" @click="bigger" title="Larger text">A+</button>
+              <button class="button" @click="openSearch">Search</button>
+              <button class="button" v-if="loggedIn" :title="me" @click="signOut">Sign out</button>
             </div>
           </div>
         </div>
@@ -34,6 +39,7 @@
 
 <script>
   import LoginModal from '@/components/LoginModal'
+  import { preferences, toggleTheme, stepScale, toggleDebug } from '@/preferences'
 
   export default {
     name: 'App',
@@ -62,6 +68,12 @@
       },
       me() {
         return this.$store.state.me || ''
+      },
+      theme() {
+        return preferences.theme
+      },
+      scale() {
+        return preferences.scale
       }
     },
     methods: {
@@ -74,6 +86,15 @@
       dismissError () {
         this.$store.dispatch('dismissError')
       },
+      cycleTheme () {
+        toggleTheme()
+      },
+      smaller () {
+        stepScale(-1)
+      },
+      bigger () {
+        stepScale(1)
+      },
       signOut () {
         this.$store.dispatch('logout')
         this.$router.push('/')
@@ -82,6 +103,11 @@
         const el = event.target
         const tag = el && el.tagName ? el.tagName.toLowerCase() : ''
         if (tag === 'input' || tag === 'textarea' || tag === 'select' || (el && el.isContentEditable)) {
+          return
+        }
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'd') {
+          event.preventDefault()
+          toggleDebug()
           return
         }
         if (event.ctrlKey || event.metaKey || event.altKey) {

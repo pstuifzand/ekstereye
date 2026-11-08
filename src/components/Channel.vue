@@ -39,7 +39,7 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 8px;
-    color: #363636;
+    color: var(--fg, #363636);
   }
 
   .channel--name a:hover .channel--title {
@@ -48,7 +48,7 @@
 
   .channel--count {
     font-size: .75rem;
-    color: #8a8a8a;
+    color: var(--muted, #8a8a8a);
     font-variant-numeric: tabular-nums;
   }
 </style>
