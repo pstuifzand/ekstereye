@@ -77,6 +77,13 @@
       }
     },
 
+    watch: {
+      active(value) {
+        // The parent's session can expire while the modal is closed.
+        this.show = value
+      }
+    },
+
     mounted() {
       this.show = this.active
 

@@ -3,15 +3,17 @@
     <div :class="classes" @click="markRead">
       <div class="card-image" v-if="mainImage">
         <figure class="image">
-          <img :src="mainImage"/>
+          <img :src="mainImage" loading="lazy" decoding="async" alt=""/>
         </figure>
       </div>
 
       <div class="card-content">
         <div class="media">
           <div class="media-left">
-            <p class="image is-48x48">
-              <img :src="author_photo"/>
+            <p class="image is-48x48 avatar">
+              <img v-if="author_photo && !avatarFailed" :src="author_photo" loading="lazy" decoding="async" alt=""
+                   @error="avatarFailed = true"/>
+              <span v-else class="avatar-fallback" aria-hidden="true">{{ author_initial }}</span>
             </p>
           </div>
 
@@ -30,9 +32,10 @@
               <div class="content html-body" v-if="main_content_html" v-html="main_content_html"></div>
               <div class="content html-body is-pre" v-else-if="main_content_text" v-text="main_content_text"></div>
 
-              <div class="photos">
-                <div class="photo" v-for="photo in photo_all" :key="photo">
-                  <img :src="photo" class="image" @click="replaceMainImage(photo)"/>
+              <div class="photos" v-if="photo_rest.length">
+                <div v-for="photo in photo_rest" :key="photo" :class="{'photo': true, 'active': photo === mainImage}">
+                  <img :src="photo" class="image" loading="lazy" decoding="async" alt=""
+                       @click="replaceMainImage(photo)"/>
                 </div>
               </div>
             </div>
@@ -138,6 +141,7 @@ export default {
         hasHiddenContent: true,
         hiddenContentVisible: false,
         mainImage: null,
+        avatarFailed: false,
       }
     },
 
@@ -386,6 +390,10 @@ export default {
         }
         return this.currentItem.author.url
       },
+      author_initial() {
+        const name = this.author_name || ''
+        return name.trim().charAt(0).toUpperCase() || '?'
+      },
       author_photo() {
         if (!this.currentItem.author) {
           return '';
@@ -398,6 +406,7 @@ export default {
     },
     watch: {
       item() {
+        this.avatarFailed = false
         this.mainImage = this.photo_first
         this.$nextTick(() => {
           const el = this.$refs['content-container']
@@ -427,6 +436,22 @@ export default {
 
   .media .entry .media {
     margin-top: 0;
+  }
+
+  .avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #eef0f6;
+    color: #5757e8;
+    font-weight: 600;
+  }
+
+  .photo.active img {
+    outline: 2px solid #5757e8;
   }
 
   .photos {

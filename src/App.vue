@@ -15,12 +15,17 @@
           <div class="navbar-end">
             <div class="buttons">
               <button class="button is-light" @click="openSearch">Search</button>
+              <button class="button is-light" v-if="loggedIn" :title="me" @click="signOut">Sign out</button>
             </div>
           </div>
         </div>
       </div>
     </nav>
     <div class="container">
+      <div class="notification is-danger error-banner" v-if="error">
+        <button class="delete" aria-label="dismiss" @click="dismissError"></button>
+        {{ error }}
+      </div>
       <router-view/>
     </div>
     <LoginModal :active="!this.$store.state.logged_in"></LoginModal>
@@ -44,6 +49,15 @@
     computed: {
       menuActive() {
         return this.$store.state.menuActive
+      },
+      error() {
+        return this.$store.state.error
+      },
+      loggedIn() {
+        return this.$store.state.logged_in
+      },
+      me() {
+        return this.$store.state.me || ''
       }
     },
     methods: {
@@ -53,11 +67,22 @@
       toggleMenu () {
         this.$store.dispatch('toggleMenu' )
       },
+      dismissError () {
+        this.$store.dispatch('dismissError')
+      },
+      signOut () {
+        this.$store.dispatch('logout')
+        this.$router.push('/')
+      }
     }
   }
 </script>
 
 <style>
+  .error-banner {
+    margin: 12px 10px 0;
+  }
+
   #app {
     font-family: 'Avenir', Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;

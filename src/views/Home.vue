@@ -91,6 +91,9 @@
       },
       searchPopupIsOpen () {
         return this.$store.state.searchPopupIsOpen
+      },
+      loggedIn () {
+        return this.$store.state.logged_in
       }
     },
 
@@ -117,12 +120,25 @@
       openPost() {
         this.showPost = true
       },
+      load() {
+        if (!this.$store.state.logged_in) {
+          return
+        }
+        this.$store.dispatch('fetchChannels')
+        this.$store.dispatch('fetchTimeline', {uid: this.uid})
+      },
       showChannels () {
         this.channelsVisible = !this.channelsVisible
       }
     },
 
     watch: {
+      loggedIn(value) {
+        // Signing in from the modal has to load the feed; mounted() already ran.
+        if (value) {
+          this.load()
+        }
+      },
       '$route'(to, from) {
         if (to === from) {
           this.$forceUpdate()
@@ -135,10 +151,7 @@
     },
 
     mounted() {
-      if (this.$store.state.logged_in) {
-        this.$store.dispatch('fetchChannels')
-        this.$store.dispatch('fetchTimeline', {uid: this.uid})
-      }
+      this.load()
     }
   }
 </script>

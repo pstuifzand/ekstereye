@@ -4,7 +4,7 @@
       <TimelineEntry :item="item" @debug="debug" @markRead="markRead(channel.uid, ...arguments)" @followFeed="$emit('followFeed', arguments[0])"
                      :is-main-entry="true"/>
     </div>
-    <div v-if="items.length === 0">
+    <div v-if="items.length === 0 && loggedIn">
       <p class="text-center">No items in this timeline</p>
     </div>
     <div class="level">
@@ -34,6 +34,9 @@
     },
 
     computed: {
+      loggedIn() {
+        return this.$store.state.logged_in
+      },
       items() {
         return this.timeline.items.filter((item) => {
           return item.type === 'entry' || item.type === 'cite';

@@ -4,6 +4,7 @@ import Micropub from 'micropub-helper';
 import { EventSourcePolyfill } from 'event-source-polyfill'
 import _ from "lodash"
 import { setMarkReadSender } from './markRead'
+import { request, setUnauthorizedHandler } from './api'
 
 Vue.use(Vuex)
 
@@ -42,6 +43,8 @@ const store = new Vuex.Store({
       debugItem: {},
       debugVisible: false,
       menuActive: false,
+      error: '',
+      loading: false,
     };
     let loginData = JSON.parse(window.localStorage.getItem('login_data'))
     if (loginData) {
@@ -174,20 +177,40 @@ const store = new Vuex.Store({
     },
     activateMenu(state) {
       state.menuActive = !state.menuActive
+    },
+    setError(state, message) {
+      state.error = message || ''
+    },
+    clearError(state) {
+      state.error = ''
+    },
+    setLoading(state, loading) {
+      state.loading = Boolean(loading)
+    },
+    logout(state) {
+      if (state.eventSource !== null) {
+        state.eventSource.close()
+        state.eventSource = null
+      }
+      window.localStorage.removeItem('login_data')
+      state.logged_in = false
+      state.access_token = ''
+      state.me = ''
+      state.channels = []
+      state.channel = {}
+      state.timeline = {items: [], paging: {}}
+      state.globalTimeline = {items: []}
+      state.searchItems = []
     }
   },
 
   actions: {
     fetchChannels({commit}) {
-      return fetch(this.state.microsubEndpoint + '?action=channels', {
-        headers: {
-          'Authorization': 'Bearer ' + this.state.access_token
-        }
-      })
-        .then(response => response.json())
+      return request(this.state.microsubEndpoint + '?action=channels', {token: this.state.access_token})
         .then(response => {
           commit('newChannels', response.channels)
         })
+        .catch(error => commit('setError', error.message))
     },
     switchChannel({commit}, channel) {
       commit('clearTimeline', {channel: channel})
@@ -203,14 +226,15 @@ const store = new Vuex.Store({
       if (channel.before) {
         url += '&before=' + channel.before;
       }
-      return fetch(url, {
-        headers: {
-          'Authorization': 'Bearer ' + this.state.access_token
-        }
-      })
-        .then(response => response.json())
+      commit('setLoading', true)
+      return request(url, {token: this.state.access_token})
         .then(response => {
           commit('newTimeline', {channel: channel, timeline: response})
+          return response
+        })
+        .catch(error => commit('setError', error.message))
+        .then(response => {
+          commit('setLoading', false)
           return response
         })
     },
@@ -232,12 +256,10 @@ const store = new Vuex.Store({
         ? _(entry).map(uid => '&entry[]=' + encodeURIComponent(uid)).join("")
         : '&entry=' + encodeURIComponent(entry)
       let url = this.state.microsubEndpoint + '?action=timeline&method=mark_read&channel=' + encodeURIComponent(channel) + entries;
-      return fetch(url, {
+      return request(url, {
         method: 'POST',
-        keepalive: Boolean(keepalive),
-        headers: {
-          'Authorization': 'Bearer ' + this.state.access_token
-        }
+        token: this.state.access_token,
+        keepalive: Boolean(keepalive)
       })
     },
     configQuery (_, key) {
@@ -297,33 +319,32 @@ const store = new Vuex.Store({
       url.searchParams.set('action', 'search')
       url.searchParams.set('channel', channel)
       url.searchParams.set('query', query.query)
-      return fetch(url.toString(), {
-        headers: {
-          'Authorization': 'Bearer ' + this.state.access_token
-        },
-        method: 'POST'
+      return request(url.toString(), {
+        method: 'POST',
+        token: this.state.access_token
       })
-      .then(response => response.json())
       .then(response => {
-        if (response.items) {
+        if (response && response.items) {
           commit('newSearchResults', response.items)
           return { error: false }
         } else {
           commit('newSearchResults', [])
-          return { error: response.error }
+          return { error: (response && response.error) || 'The search failed.' }
         }
+      })
+      .catch(error => {
+        commit('newSearchResults', [])
+        return { error: error.message }
       })
     },
     createChannel(x, name) {
       let url = this.state.microsubEndpoint + '?action=channels&name=' + encodeURIComponent(name)
-      return fetch(url, {
+      return request(url, {
         method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + this.state.access_token
-        }
+        token: this.state.access_token
       }).then(() => {
         this.dispatch('fetchChannels')
-      })
+      }).catch(error => x.commit('setError', error.message))
     },
     startEventListening({commit}, url) {
       return commit('createEventSource', url)
@@ -336,9 +357,23 @@ const store = new Vuex.Store({
     },
     toggleMenu({commit}) {
       return commit('activateMenu')
+    },
+    logout({commit}) {
+      commit('logout')
+      commit('clearError')
+    },
+    dismissError({commit}) {
+      commit('clearError')
+    },
+    sessionExpired({commit}) {
+      commit('logout')
+      commit('setError', 'Your session expired. Sign in again.')
     }
   }
 })
+
+// A 401 anywhere means the session is gone: reset the app state once, not per request.
+setUnauthorizedHandler(() => store.dispatch('sessionExpired'))
 
 // The queue module owns the batching and the flush-on-hide; the store owns the request.
 setMarkReadSender((channel, uids, options) =>
