@@ -25,6 +25,11 @@ npm run build
 npm run preview
 ```
 
+### Runs the published image
+```
+docker run --rm -p 8080:80 ghcr.io/pstuifzand/ekstereye:master
+```
+
 ### Lints the sources
 ```
 npm run lint
