@@ -131,11 +131,28 @@
         const next = Math.max(0, Math.min(entries.length - 1, index))
         this.selectedIndex = next
         this.$nextTick(() => {
-          const entry = entries[next]
-          if (entry && entry.$el && entry.$el.scrollIntoView) {
-            entry.$el.scrollIntoView({block: 'nearest'})
-          }
+          this.scrollEntryIntoView(entries[next])
         })
+      },
+      scrollEntryIntoView(entry) {
+        const el = entry && entry.$el
+        if (!el) {
+          return
+        }
+        const rect = el.getBoundingClientRect()
+        const topMargin = 80 // fixed navbar plus breathing room
+        const bottomMargin = 24
+        const viewport = window.innerHeight
+        // Leave a card alone while it is comfortably visible; recentre only when it is
+        // partly hidden or freshly entered from the edge.
+        if (rect.top >= topMargin && rect.bottom <= viewport - bottomMargin) {
+          return
+        }
+        const tallest = viewport - topMargin - bottomMargin
+        const top = rect.height >= tallest
+          ? window.scrollY + rect.top - topMargin
+          : window.scrollY + rect.top - Math.max(topMargin, (viewport - rect.height) / 2)
+        window.scrollTo({top, behavior: 'smooth'})
       },
       currentEntry() {
         const entries = this.renderedEntries()
