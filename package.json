@@ -1,61 +1,33 @@
 {
   "name": "ekstereye",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "dev": "vite",
+    "serve": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src"
   },
   "dependencies": {
-    "@primer/css": "^14.4.0",
-    "ajv": "^8.11.0",
-    "axios": "^0.21.4",
-    "bulma": "^0.9.3",
-    "event-source-polyfill": "0.0.16",
-    "isomorphic-fetch": "^2.2.1",
+    "bulma": "^0.9.4",
+    "dayjs": "^1.11.23",
+    "event-source-polyfill": "^1.0.31",
     "lodash": "^4.17.21",
-    "micropub-helper": "^1.6.2",
-    "moment": "^2.29.3",
-    "node-sass": "^4.14.1",
-    "rel-parser": "github:grantcodes/rel-scraper",
-    "rel-scraper": "github:grantcodes/rel-scraper",
-    "sass-loader": "^7.3.1",
-    "tailwindcss": "1.1.4",
-    "vue": "^2.6.14",
-    "vue-router": "^3.5.3",
+    "micropub-helper": "^2.1.1",
+    "rel-parser": "^3.0.1",
+    "vue": "^2.7.16",
+    "vue-router": "^3.6.5",
     "vuex": "^3.6.2"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.12.1",
-    "@vue/cli-plugin-eslint": "^3.12.1",
-    "@vue/cli-service": "^3.12.1",
-    "postcss-node-sass": "^2.1.8",
-    "postcss-scss": "^2.1.1",
-    "vue-template-compiler": "^2.6.14"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
-    ],
-    "rules": {},
-    "parserOptions": {
-      "parser": "babel-eslint"
-    }
-  },
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {}
-    }
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not ie <= 8"
-  ]
+    "@eslint/js": "^10.0.0",
+    "@vitejs/plugin-vue2": "^2.3.4",
+    "eslint": "^10.14.0",
+    "eslint-plugin-vue": "^10.12.0",
+    "globals": "^16.0.0",
+    "sass": "^1.108.1",
+    "vite": "^7.1.0"
+  }
 }

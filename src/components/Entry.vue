@@ -106,7 +106,7 @@
 </template>
 
 <script>
-import moment from 'moment'
+import dayjs from 'dayjs'
 import DestinationButtons from "@/components/DestinationButtons";
 import EntryCategories from "@/components/EntryCategories";
 import SyndicationButtons from "@/components/SyndicationButtons";
@@ -208,8 +208,8 @@ export default {
         })
       },
       hasRef(key) {
-        if (this.item.hasOwnProperty(key) && this.item.hasOwnProperty('refs')) {
-          if (this.item.refs.hasOwnProperty(this.item[key])) {
+        if (Object.prototype.hasOwnProperty.call(this.item, key) && Object.prototype.hasOwnProperty.call(this.item, 'refs')) {
+          if (Object.prototype.hasOwnProperty.call(this.item.refs, this.item[key])) {
             return true
           }
         }
@@ -244,10 +244,10 @@ export default {
         }
       },
       niceTime() {
-        return moment(this.item.published).fromNow()
+        return dayjs(this.item.published).fromNow()
       },
       refNiceTime() {
-        return moment(this.innerRef.published).fromNow()
+        return dayjs(this.innerRef.published).fromNow()
       },
       classes() {
         return {

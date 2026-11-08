@@ -9,7 +9,7 @@
 </template>
 
 <script>
-    import moment from "moment";
+    import dayjs from "dayjs";
 
     export default {
         name: "ShortTimeline",
@@ -29,7 +29,7 @@
                 return '';
             },
             niceTime(item) {
-                return moment(item.published).fromNow()
+                return dayjs(item.published).fromNow()
             }
         }
     }

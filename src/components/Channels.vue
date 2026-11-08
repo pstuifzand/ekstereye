@@ -8,10 +8,8 @@
 </template>
 
 <script>
-  import ChannelCreator from "./ChannelCreator";
   export default {
     name: "Channels",
-    components: {ChannelCreator},
     props: ['channels'],
     methods: {
       open() {

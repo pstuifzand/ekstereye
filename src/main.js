@@ -1,10 +1,13 @@
 import Vue from 'vue'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import 'bulma'
+import 'bulma/bulma.sass'
 import '@/styles.scss'
-import '@primer/css/utilities/index.scss';
+
+dayjs.extend(relativeTime)
 
 Vue.config.productionTip = false
 

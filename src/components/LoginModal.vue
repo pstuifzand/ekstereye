@@ -26,9 +26,11 @@
 <script>
   import Micropub from 'micropub-helper';
   import helper from '@/helpers';
-  import relScraper from 'rel-scraper'
+  import microrp from 'rel-parser'
 
-  const CLIENT_ID = 'https://reader.p83.nl/'
+  // IndieAuth requires redirect_uri to share the client_id origin, so the client
+  // id follows wherever the app is actually served from (localhost in dev).
+  const CLIENT_ID = import.meta.env.VITE_CLIENT_ID || window.location.origin + '/'
 
   export default {
     name: "LoginModal",
@@ -63,7 +65,7 @@
           scope: 'create post channels timeline'
         })
 
-        micropub.getAuthUrl().then(url => {
+        micropub.getAuthUrl(false).then(url => {
           let options = {
             loginState: state
           }
@@ -78,7 +80,7 @@
     mounted() {
       this.show = this.active
 
-      if (!this.$route.query.hasOwnProperty('code')) {
+      if (!Object.prototype.hasOwnProperty.call(this.$route.query, 'code')) {
         return
       }
       let code = this.$route.query['code']
@@ -95,16 +97,27 @@
         scope: 'create post channels timeline',
       })
 
-      relScraper(this.$route.query['me']).then(rels => {
-        micropub.options.tokenEndpoint = rels.token_endpoint
-        micropub.options.authEndpoint = rels.auth_endpoint
-        micropub.options.micropubEndpoint = rels.micropub
+      microrp(this.$route.query['me']).then(rels => {
+        // rel-parser returns arrays of rel values; the app stores single urls.
+        const first = value => (Array.isArray(value) ? value[0] : value)
+        const endpoints = {
+          token_endpoint: first(rels.token_endpoint),
+          auth_endpoint: first(rels.authorization_endpoint || rels.auth_endpoint),
+          micropub: first(rels.micropub),
+          microsub: first(rels.microsub)
+        }
+        // micropub-helper 2.x exposes options as a copy, so assign instead of mutating.
+        micropub.options = {
+          tokenEndpoint: endpoints.token_endpoint,
+          authEndpoint: endpoints.auth_endpoint,
+          micropubEndpoint: endpoints.micropub
+        }
 
         let options = {
-          tokenEndpoint: rels.token_endpoint,
-          authEndpoint: rels.auth_endpoint,
-          micropubEndpoint: rels.micropub,
-          microsubEndpoint: rels.microsub
+          tokenEndpoint: endpoints.token_endpoint,
+          authEndpoint: endpoints.auth_endpoint,
+          micropubEndpoint: endpoints.micropub,
+          microsubEndpoint: endpoints.microsub
         }
 
         this.$store.dispatch('saveEndpoints', options)

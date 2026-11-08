@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import Micropub from 'micropub-helper';
-import EventSource from 'eventsource'
+import { EventSourcePolyfill } from 'event-source-polyfill'
 import _ from "lodash"
 
 Vue.use(Vuex)
@@ -75,7 +75,7 @@ export default new Vuex.Store({
       if (state.eventSource !== null) {
         state.eventSource.close()
       }
-      state.eventSource = new EventSource(state.microsubEndpoint + url, {
+      state.eventSource = new EventSourcePolyfill(state.microsubEndpoint + url, {
         headers: {
           'Authorization': 'Bearer ' + this.state.access_token
         }
@@ -203,12 +203,9 @@ export default new Vuex.Store({
       commit('newAccessToken', response)
     },
     markRead(x, {channel, entry}) {
-      let entries = '';
-      if (Array.isArray(entry)) {
-        entries = _(entry).map(uid => '&entry[]=' + encodeURIComponent(uid)).join("")
-      } else {
-        entries = '&entry=' + encodeURIComponent(entry)
-      }
+      const entries = Array.isArray(entry)
+        ? _(entry).map(uid => '&entry[]=' + encodeURIComponent(uid)).join("")
+        : '&entry=' + encodeURIComponent(entry)
       let url = this.state.microsubEndpoint + '?action=timeline&method=mark_read&channel=' + encodeURIComponent(channel) + entries;
       return fetch(url, {
         method: 'POST',
