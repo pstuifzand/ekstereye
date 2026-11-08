@@ -4,16 +4,22 @@
       <TimelineEntry :item="item" @debug="debug" @markRead="markRead(channel.uid, ...arguments)" @followFeed="$emit('followFeed', arguments[0])"
                      :is-main-entry="true"/>
     </div>
-    <div v-if="items.length === 0 && loggedIn">
+    <div v-if="items.length === 0 && loggedIn && !loading">
       <p class="text-center">No items in this timeline</p>
     </div>
-    <div class="level">
+    <div v-if="loading && items.length === 0" class="level">
+      <div class="level-item"><span class="timeline-status">Loading…</span></div>
+    </div>
+    <div class="level timeline-pager">
       <div class="level-item">
-        <button class="button" @click="prevPage" v-if="timeline.paging.before">Prev Page</button>
+        <button class="button is-small" @click="newer" v-if="hasNewer">Newer</button>
       </div>
       <div class="level-item">
-        <button class="button" @click="nextPage" v-if="timeline.paging.after">Next Page</button>
+        <button class="button is-small" @click="older" v-if="hasOlder" :disabled="loading">Older</button>
       </div>
+    </div>
+    <div ref="sentinel" class="timeline-sentinel">
+      <span v-if="loading && items.length > 0" class="timeline-status">Loading…</span>
     </div>
   </div>
 </template>
@@ -37,6 +43,15 @@
       loggedIn() {
         return this.$store.state.logged_in
       },
+      loading() {
+        return this.$store.state.loading
+      },
+      hasNewer() {
+        return this.$store.state.timelineStack.length > 0
+      },
+      hasOlder() {
+        return Boolean(this.timeline.paging && this.timeline.paging.after)
+      },
       items() {
         return this.timeline.items.filter((item) => {
           return item.type === 'entry' || item.type === 'cite';
@@ -48,13 +63,35 @@
       debug(item) {
         this.$store.dispatch('openDebug', item)
       },
-      nextPage() {
-        if (this.timeline.paging.after) {
-          this.$emit('getPage', {uid: this.channel.uid, after: this.timeline.paging.after})
+      older() {
+        // The sentinel stays in view when a page is shorter than the viewport, so guard
+        // against firing another request while one is still in flight.
+        if (!this.hasOlder || this.loading) {
+          return
         }
+        this.$emit('older', {uid: this.channel.uid, after: this.timeline.paging.after})
       },
-      prevPage() {
-        this.$emit('getPage', {uid: this.channel.uid, before: this.timeline.paging.before})
+      newer() {
+        if (!this.hasNewer) {
+          return
+        }
+        this.$emit('newer')
+      },
+      observeSentinel() {
+        if (!('IntersectionObserver' in window) || !this.$refs.sentinel) {
+          return
+        }
+        if (this.sentinelObserver) {
+          this.sentinelObserver.disconnect()
+        }
+        this.sentinelObserver = new IntersectionObserver((records) => {
+          records.forEach((record) => {
+            if (record.isIntersecting) {
+              this.older()
+            }
+          })
+        }, {rootMargin: '200px'})
+        this.sentinelObserver.observe(this.$refs.sentinel)
       },
       markRead(channel, item) {
         if (!item || item._is_read) {
@@ -96,21 +133,27 @@
 
     created() {
       this.checkScheduled = false
+      this.sentinelObserver = null
     },
 
     mounted() {
       window.addEventListener('scroll', this.scheduleSeenCheck, {passive: true})
       this.$nextTick(this.markSeenEntries)
+      this.$nextTick(this.observeSentinel)
     },
 
     watch: {
       items() {
         this.$nextTick(this.markSeenEntries)
+        this.$nextTick(this.observeSentinel)
       }
     },
 
     beforeDestroy() {
       window.removeEventListener('scroll', this.scheduleSeenCheck)
+      if (this.sentinelObserver) {
+        this.sentinelObserver.disconnect()
+      }
       flushMarkRead()
     }
   }
@@ -119,6 +162,15 @@
 <style scoped>
   .timeline--item {
     margin-bottom: 16px;
+  }
+
+  .timeline-sentinel {
+    height: 1px;
+  }
+
+  .timeline-status {
+    font-size: 0.85rem;
+    color: #7a7a7a;
   }
 
   .has-buttons {

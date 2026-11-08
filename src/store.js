@@ -30,6 +30,7 @@ const store = new Vuex.Store({
     let newState = {
       channels: [],
       timeline: {items: [], paging: {}},
+      timelineStack: [],
       channel: {},
       logged_in: false,
       micropubEndpoint: '',
@@ -66,7 +67,31 @@ const store = new Vuex.Store({
       // find the channel matching the selected uid
       channel = _.find(state.channels, item => item.uid === channel.uid)
       state.channel = channel
-      state.timeline = normalizeTimeline(timeline)
+      state.timeline = normalizeTimeline(timeline) || {items: [], paging: {}}
+      state.timelineStack = []
+    },
+    appendTimeline(state, {timeline}) {
+      // Paging forwards: keep what is already on screen and remember where it ended,
+      // so "Newer" can trim back without another request.
+      const page = normalizeTimeline(timeline) || {items: [], paging: {}}
+      const current = state.timeline || {items: [], paging: {}}
+      state.timelineStack.push({length: current.items.length, paging: current.paging})
+      const seen = new Set(current.items.map(item => item._id))
+      const fresh = (page.items || []).filter(item => !seen.has(item._id))
+      state.timeline = {
+        items: current.items.concat(fresh),
+        paging: page.paging || current.paging
+      }
+    },
+    previousTimelinePage(state) {
+      const previous = state.timelineStack.pop()
+      if (!previous) {
+        return
+      }
+      state.timeline = {
+        items: state.timeline.items.slice(0, previous.length),
+        paging: previous.paging
+      }
     },
     newAccessToken(state, {me, access_token, scope}) {
       state.logged_in = true
@@ -80,6 +105,7 @@ const store = new Vuex.Store({
         items: [],
         paging: {}
       }
+      state.timelineStack = []
     },
     setChannelCreatorState(state, open) {
       state.channelCreatorIsOpen = open
@@ -229,7 +255,11 @@ const store = new Vuex.Store({
       commit('setLoading', true)
       return request(url, {token: this.state.access_token})
         .then(response => {
-          commit('newTimeline', {channel: channel, timeline: response})
+          if (channel.append) {
+            commit('appendTimeline', {timeline: response})
+          } else {
+            commit('newTimeline', {channel: channel, timeline: response})
+          }
           return response
         })
         .catch(error => commit('setError', error.message))

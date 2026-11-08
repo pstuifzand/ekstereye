@@ -24,7 +24,7 @@
       </div>
       <new-post class="mt-20" v-if="showPost" @close="showPost = false"></new-post>
       <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="channel"
-                @getPage="getPage" @followFeed="openFeedFollower(arguments[0])"></Timeline>
+                @older="loadOlder" @newer="loadNewer" @followFeed="openFeedFollower(arguments[0])"></Timeline>
     </div>
 
     <div class="column">
@@ -112,10 +112,12 @@
           })
         })
       },
-      getPage(next) {
-        this.$store.dispatch('fetchTimeline', next).then(() => {
-          window.scrollTo({top: 0})
-        })
+      loadOlder(query) {
+        // Appending keeps the reader where it is; only a channel switch goes to the top.
+        return this.$store.dispatch('fetchTimeline', Object.assign({}, query, {append: true}))
+      },
+      loadNewer() {
+        this.$store.commit('previousTimelinePage')
       },
       openPost() {
         this.showPost = true
