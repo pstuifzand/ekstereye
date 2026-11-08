@@ -13,6 +13,7 @@
   "dependencies": {
     "bulma": "^0.9.4",
     "dayjs": "^1.11.23",
+    "dompurify": "^3.4.17",
     "event-source-polyfill": "^1.0.31",
     "lodash": "^4.17.21",
     "micropub-helper": "^2.1.1",

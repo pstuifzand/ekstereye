@@ -27,7 +27,8 @@
               </div>
 
               <h3 class="title is-6" v-if="currentItem.name" v-text="currentItem.name"></h3>
-              <div class="content" v-html="main_content"></div>
+              <div class="content html-body" v-if="main_content_html" v-html="main_content_html"></div>
+              <div class="content html-body is-pre" v-else-if="main_content_text" v-text="main_content_text"></div>
 
               <div class="photos">
                 <div class="photo" v-for="photo in photo_all" :key="photo">
@@ -107,6 +108,7 @@
 
 <script>
 import { fromNow, absoluteTime } from '@/relative-time'
+import { sanitizeHtml } from '@/sanitize'
 import DestinationButtons from "@/components/DestinationButtons";
 import EntryCategories from "@/components/EntryCategories";
 import SyndicationButtons from "@/components/SyndicationButtons";
@@ -296,25 +298,31 @@ export default {
         }
         return ''
       },
-      main_content() {
-        let content = this.currentItem.content
-        if (content) {
-          if (content.html) {
-            return content.html
-          } else if (content.text) {
-            return content.text
-          }
+      rawContent() {
+        const source = this.currentItem.content || this.currentItem.summary
+        // mf2 allows a single value or an array of values.
+        return Array.isArray(source) ? source[0] : source
+      },
+      main_content_html() {
+        const content = this.rawContent
+        if (content && typeof content === 'object' && typeof content.html === 'string') {
+          return sanitizeHtml(content.html, this.currentItem.url)
+        }
+        return ''
+      },
+      main_content_text() {
+        const content = this.rawContent
+        if (!content) {
+          return ''
+        }
+        if (typeof content === 'string') {
           return content
         }
-        content = this.currentItem.summary
-        if (content) {
-          if (content.html) {
-            return content.html
-          } else if (content.text) {
-            return content.text
-          }
-          return content
+        if (typeof content === 'object' && typeof content.text === 'string') {
+          return content.text
         }
+        // Nothing renderable, but the entry still deserves a pointer to itself.
+        return this.currentItem.url || ''
       },
       photo_first() {
         if (this.currentItem.photo && this.currentItem.photo.length >= 1) {
@@ -428,6 +436,15 @@ export default {
   }
   .is-pre {
     white-space: pre-wrap;
+  }
+
+  .html-body ::v-deep img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .html-body ::v-deep a {
+    word-break: break-word;
   }
 
   .content-container {
