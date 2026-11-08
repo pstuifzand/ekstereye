@@ -36,6 +36,16 @@ export function fromNow(value) {
   return dayjs(moment).from(dayjs(clock.now))
 }
 
+// Relative time suits a status; an essay from three months ago reads better as a date.
+export function stamp(value) {
+  const moment = dayjs(value)
+  if (!moment.isValid()) {
+    return ''
+  }
+  const days = Math.abs(dayjs(clock.now).diff(moment, 'day'))
+  return days < 7 ? fromNow(value) : moment.format('D MMM YYYY')
+}
+
 export function absoluteTime(value) {
   const moment = dayjs(value)
   if (!moment.isValid()) {
@@ -44,4 +54,4 @@ export function absoluteTime(value) {
   return moment.format('LLL')
 }
 
-export default { clock, fromNow, absoluteTime }
+export default { clock, fromNow, stamp, absoluteTime }

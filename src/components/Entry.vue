@@ -33,7 +33,7 @@
               <div class="content html-body is-pre" v-else-if="main_content_text" v-text="main_content_text"></div>
 
               <div class="photos" v-if="photo_rest.length">
-                <div v-for="photo in photo_rest" :key="photo" :class="{'photo': true, 'active': photo === mainImage}">
+                <div v-for="photo in photo_rest" :key="photo" class="photo">
                   <img :src="photo" class="image" loading="lazy" decoding="async" alt=""
                        @click="replaceMainImage(photo)"/>
                 </div>
@@ -42,7 +42,7 @@
           </div>
         </div>
         <div>
-          <div class="level">
+          <div class="level entry-actions">
             <div class="level-item">
               <button class="is-link" v-if="hasHiddenContent" @click.prevent.stop="toggleHiddenContent">
                 {{ hiddenContentVisible ? 'Show less' : 'Read more' }}
@@ -112,7 +112,7 @@
 </template>
 
 <script>
-import { fromNow, absoluteTime } from '@/relative-time'
+import { stamp, absoluteTime } from '@/relative-time'
 import { sanitizeHtml } from '@/sanitize'
 import DestinationButtons from "@/components/DestinationButtons";
 import EntryCategories from "@/components/EntryCategories";
@@ -303,10 +303,39 @@ export default {
         }
       },
       niceTime() {
-        return fromNow(this.currentItem.published)
+        return stamp(this.currentItem.published)
       },
       niceTimeTitle() {
         return absoluteTime(this.currentItem.published)
+      },
+      bodyText() {
+        const content = this.currentItem.content
+        if (!content) {
+          return ''
+        }
+        if (typeof content === 'string') {
+          return content
+        }
+        return content.text || (content.html ? content.html.replace(/<[^>]*>/g, ' ') : '')
+      },
+      hasImages() {
+        const photos = this.currentItem.photo
+        if (photos && photos.length) {
+          return true
+        }
+        return Boolean(this.currentItem.content && this.currentItem.content.html
+          && /<img\b/i.test(this.currentItem.content.html))
+      },
+      kind() {
+        // A reader of both essays and check-ins needs the entry to say which it is.
+        const length = this.bodyText.trim().length
+        if (this.currentItem.name || length > 480) {
+          return 'article'
+        }
+        if (this.hasImages) {
+          return 'media'
+        }
+        return 'status'
       },
       classes() {
         return {
@@ -314,7 +343,10 @@ export default {
           'card': true,
           'mb-20': true,
           'unread': !this.item._is_read,
-          'selected': Boolean(this.isSelected)
+          'selected': Boolean(this.isSelected),
+          'kind-article': this.kind === 'article',
+          'kind-status': this.kind === 'status',
+          'kind-media': this.kind === 'media'
         }
       },
       innerRef() {
@@ -395,10 +427,12 @@ export default {
         return []
       },
       photo_rest() {
-        if (this.currentItem.photo && this.currentItem.photo.length > 1) {
-          return this.currentItem.photo.slice(1)
+        // Everything except what the header already shows: swapping a photo into the
+        // header puts the previous one back in the strip, so the swap is reversible.
+        if (!this.currentItem.photo || this.currentItem.photo.length < 2) {
+          return []
         }
-        return []
+        return this.currentItem.photo.filter((photo) => photo !== this.mainImage)
       },
       outside_author_name() {
         if (!this.item.author) {
@@ -481,8 +515,9 @@ export default {
   /* Keyboard selection: neutral bar and ring, so hue always means "unread" (blue)
      and the selected card is read by shape instead. */
   .entry.selected {
+    --entry-bg: #f6f6f8;
     box-shadow: inset 5px 0 0 0 #363636, 0 0 0 3px #363636;
-    background: #f6f6f8;
+    background: var(--entry-bg);
   }
 
   .entry-action {
@@ -542,13 +577,121 @@ export default {
     word-break: break-word;
   }
 
+  .entry {
+    --entry-bg: #fff;
+  }
+
   .content-container {
-    max-height: 20vh;
+    position: relative;
+    /* Ten lines at the article rhythm: enough to tell what a piece argues, short
+       enough that a long channel is still a list. */
+    max-height: 17.5rem;
     overflow: hidden;
   }
 
   .content-container.open {
     max-height: fit-content;
+  }
+
+  .kind-status .content-container,
+  .kind-media .content-container {
+    max-height: none;
+    overflow: visible;
+  }
+
+  /* A fade says "there is more" without an arrow in the middle of the text. */
+  .kind-article .content-container:not(.open)::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2.5rem;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), var(--entry-bg));
+    pointer-events: none;
+  }
+
+  .kind-article .title {
+    font-size: 1.35rem;
+    line-height: 1.3;
+    margin: .35rem 0 .6rem;
+  }
+
+  .kind-article .html-body {
+    max-width: 68ch;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+
+  .kind-article .html-body p {
+    margin-bottom: .8em;
+  }
+
+  .kind-article .card-image img {
+    max-height: 45vh;
+    object-fit: cover;
+    width: 100%;
+  }
+
+  /* A photo post is the photo, but the album strip keeps it from eating the screen. */
+  .kind-media .card-image img {
+    max-height: 55vh;
+    object-fit: cover;
+    width: 100%;
+  }
+
+  .kind-media .photos {
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    max-width: 60%;
+  }
+
+  .kind-media .photos .photo img {
+    height: 64px;
+    object-fit: cover;
+    width: 100%;
+  }
+
+  .kind-status .card-content {
+    padding: .7rem .95rem .55rem;
+  }
+
+  .kind-status .media-left {
+    margin-right: .6rem;
+  }
+
+  .kind-status .avatar,
+  .kind-status .avatar-fallback {
+    width: 28px;
+    height: 28px;
+    font-size: .8rem;
+  }
+
+  .kind-status .html-body,
+  .kind-status .content {
+    font-size: .98rem;
+    line-height: 1.5;
+  }
+
+  .kind-status .html-body p {
+    margin-bottom: .4em;
+  }
+
+  /* Actions are furniture until the reader is on the card. */
+  .entry-actions {
+    opacity: 0;
+    transition: opacity .12s ease-in-out;
+  }
+
+  .entry:hover .entry-actions,
+  .entry.selected .entry-actions,
+  .entry:focus-within .entry-actions {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    .entry-actions {
+      opacity: 1;
+    }
   }
 
 </style>
