@@ -19,6 +19,7 @@
           <div class="level-item">
             <button class="button is-small" @click.prevent="openPost">New Post</button>
             <button class="button is-small" @click.prevent="openFeedFollower('')">Add feed</button>
+            <button class="button is-small" @click.prevent="feedsIsOpen = true">Feeds</button>
           </div>
         </div>
       </div>
@@ -33,6 +34,8 @@
 
     <channel-creator :is-open="this.$store.state.channelCreatorIsOpen"></channel-creator>
     <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower" :initial-channel="channel" :initial-query="feedFollowerQuery"></feed-follower>
+    <feeds-modal :is-open="feedsIsOpen" :initial-channel="channel"
+                 @close="feedsIsOpen = false" @browse="browseFeeds"></feeds-modal>
     <search-popup :is-open="searchPopupIsOpen"></search-popup>
     <DebugModal :active="this.$store.state.debugVisible"
                 :item="this.$store.state.debugItem"></DebugModal>
@@ -45,6 +48,7 @@
   import Channel from '../components/Channel.vue'
   import ChannelCreator from '../components/ChannelCreator.vue'
   import FeedFollower from "../components/FeedFollower"
+  import FeedsModal from "../components/FeedsModal"
   import NewPost from "../components/NewPost"
   import ShortTimeline from "../components/ShortTimeline";
   import SearchPopup from "../components/SearchPopup";
@@ -54,6 +58,7 @@
     name: 'home',
     components: {
       FeedFollower,
+      FeedsModal,
       Timeline,
       Channels,
       Channel,
@@ -67,6 +72,7 @@
     data() {
       return {
         feedFollowerIsOpen: false,
+        feedsIsOpen: false,
         feedFollowerQuery: '',
         showPost: false,
         channelsVisible: false,
@@ -104,6 +110,10 @@
       },
       closeFeedFollower() {
         this.feedFollowerIsOpen = false
+      },
+      browseFeeds() {
+        this.feedsIsOpen = false
+        this.openFeedFollower('')
       },
       selectChannel(channel) {
         this.$store.dispatch('switchChannel', channel).then(() => {

@@ -285,6 +285,40 @@ const store = new Vuex.Store({
           return response
         })
     },
+    // Microsub follow/unfollow: GET lists the channel's feeds, POST adds or removes one.
+    fetchFeeds(_, channelUid) {
+      if (!channelUid) {
+        return Promise.resolve([])
+      }
+      const url = this.state.microsubEndpoint + '?action=follow&channel=' + encodeURIComponent(channelUid)
+      return request(url, {token: this.state.access_token})
+        .then(response => (response && response.items) || [])
+    },
+    followFeed({dispatch}, {channel, url}) {
+      const endpoint = this.state.microsubEndpoint + '?action=follow&channel=' +
+        encodeURIComponent(channel) + '&url=' + encodeURIComponent(url)
+      return request(endpoint, {method: 'POST', token: this.state.access_token})
+        .then(feed => {
+          dispatch('notify', {type: 'success', message: 'Following ' + ((feed && feed.name) || url)})
+          return feed
+        })
+        .catch(error => {
+          dispatch('notify', {type: 'error', message: 'Could not follow the feed: ' + error.message})
+          throw error
+        })
+    },
+    unfollowFeed({dispatch}, {channel, url}) {
+      const endpoint = this.state.microsubEndpoint + '?action=unfollow&channel=' +
+        encodeURIComponent(channel) + '&url=' + encodeURIComponent(url)
+      return request(endpoint, {method: 'POST', token: this.state.access_token})
+        .then(() => {
+          dispatch('notify', {type: 'success', message: 'Feed removed'})
+        })
+        .catch(error => {
+          dispatch('notify', {type: 'error', message: 'Could not remove the feed: ' + error.message})
+          throw error
+        })
+    },
     saveEndpoints({commit}, endpoints) {
       window.localStorage.setItem('endpoints', JSON.stringify(endpoints))
       commit('newEndpoints', endpoints)

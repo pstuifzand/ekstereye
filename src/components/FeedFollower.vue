@@ -139,16 +139,15 @@
       },
       addFeed(feed) {
         feed.loading = true
-        let url = this.$store.state.microsubEndpoint + '?action=follow&channel='+this.channel.uid+'&url=' + encodeURIComponent(feed.url)
-        return fetch(url, {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + this.$store.state.access_token
-          }
-        }).then(() => {
-          feed.loading = false
-          this.$store.dispatch('fetchTimeline', this.channel)
-        })
+        // Same action as the Feeds panel, so a failure here says why instead of vanishing.
+        return this.$store.dispatch('followFeed', {channel: this.channel.uid, url: feed.url})
+          .then(() => {
+            feed.loading = false
+            this.$store.dispatch('fetchTimeline', this.channel)
+          })
+          .catch(() => {
+            feed.loading = false
+          })
       }
     }
   }
