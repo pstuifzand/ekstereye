@@ -32,5 +32,33 @@
 </script>
 
 <style scoped>
+  /* Items carry long HTML and image URLs; a non-wrapping <pre> hides most of the JSON
+     behind a horizontal scrollbar, which is not "look at the item". */
+  .modal-card {
+    width: min(56rem, 94vw);
+  }
 
+  .modal-card-body pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    margin: 0;
+    padding: 12px;
+    border-radius: 4px;
+    background: var(--sel, #f4f4f6);
+    color: var(--fg, #2f2f2f);
+  }
+
+  /* Bulma paints the head and foot whitesmoke, which is a white slab in the dark theme. */
+  .modal-card-head,
+  .modal-card-foot {
+    background: var(--card, #fff);
+    color: var(--fg, #2f2f2f);
+    border-color: var(--line, #e4e4e4);
+  }
+
+  .modal-card-body {
+    background: var(--card, #fff);
+    color: var(--fg, #2f2f2f);
+  }
 </style>

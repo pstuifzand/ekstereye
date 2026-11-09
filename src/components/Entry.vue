@@ -59,9 +59,7 @@
                 &middot; <button type="button" class="entry-action" @click.prevent="openBookmark">Bookmark</button>
                 &middot; <button type="button" class="entry-action" @click.prevent.stop="copyLink">{{ copied ? 'Copied' : 'Copy link' }}</button>
                 &middot; <button type="button" class="entry-action" @click.prevent="$emit('followFeed', author_url)" title="Try to follow the feed this item comes from">Follow</button>
-                <template v-if="debugEnabled">
-                  &middot; <button type="button" class="entry-action" @click.prevent="debug">Debug</button>
-                </template>
+                &middot; <button type="button" class="entry-action" @click.prevent="debug">Debug</button>
                 </span>
                 </small>
             </div>
@@ -142,7 +140,6 @@
 <script>
 import { stamp, absoluteTime } from '@/relative-time'
 import { entryKind } from '@/entry-kind'
-import { preferences } from '@/preferences'
 import { sanitizeHtml } from '@/sanitize'
 import DestinationButtons from "@/components/DestinationButtons";
 import EntryCategories from "@/components/EntryCategories";
@@ -199,23 +196,31 @@ export default {
       },
       reply() {
         this.$store.dispatch('micropubPost', {
-          'type': ['h-entry'],
-          'properties': {
-            'in-reply-to': [this.currentItem.url],
-            'content': [this.replyText]
+          post: {
+            'type': ['h-entry'],
+            'properties': {
+              'in-reply-to': [this.currentItem.url],
+              'content': [this.replyText]
+            },
           },
+          success: 'Reply posted',
+          failure: 'Reply failed'
         }).then(() => {
           this.replyText = '';
           this.replying = false
-        })
+        }).catch(() => {})
       },
       like() {
         this.$store.dispatch('micropubPost', {
-          'type': ['h-entry'],
-          'properties': {
-            'like-of': [this.currentItem.url]
+          post: {
+            'type': ['h-entry'],
+            'properties': {
+              'like-of': [this.currentItem.url]
+            },
           },
-        })
+          success: 'Liked',
+          failure: 'Like failed'
+        }).catch(() => {})
       },
       openRepost() {
         this.reposting = true
@@ -242,14 +247,18 @@ export default {
           properties.content = [this.repostNote]
         }
         this.$store.dispatch('micropubPost', {
-          'type': ['h-entry'],
-          'properties': properties,
+          post: {
+            'type': ['h-entry'],
+            'properties': properties,
+          },
+          success: 'Reposted',
+          failure: 'Repost failed'
         }).then(() => {
           this.repostNote = ''
           this.selected = []
           this.selectedDestinations = []
           this.reposting = false
-        })
+        }).catch(() => {})
       },
       copyLink() {
         const url = this.currentItem.url
@@ -291,15 +300,19 @@ export default {
       },
       bookmark() {
         this.$store.dispatch('micropubPost', {
-          'type': ['h-entry'],
-          'properties': {
-            'bookmark-of': [this.currentItem.url],
-            'name': [this.bookmarkTitle],
-            'content': [this.bookmarkDescription ],
-            'category': this.categories,
-            'mp-syndicate-to': this.selected,
-            'mp-destination': this.selectedDestinations
+          post: {
+            'type': ['h-entry'],
+            'properties': {
+              'bookmark-of': [this.currentItem.url],
+              'name': [this.bookmarkTitle],
+              'content': [this.bookmarkDescription ],
+              'category': this.categories,
+              'mp-syndicate-to': this.selected,
+              'mp-destination': this.selectedDestinations
+            },
           },
+          success: 'Bookmark saved',
+          failure: 'Bookmark failed'
         }).then(() => {
           this.bookmarkTitle = '';
           this.bookmarkDescription = '';
@@ -307,7 +320,7 @@ export default {
           this.selectedDestinations = []
           this.bookmarking = false
           this.categories = []
-        })
+        }).catch(() => {})
       },
       hasRef(key) {
         if (Object.prototype.hasOwnProperty.call(this.item, key) && Object.prototype.hasOwnProperty.call(this.item, 'refs')) {
@@ -398,9 +411,6 @@ export default {
       },
       kind() {
         return entryKind(this.currentItem)
-      },
-      debugEnabled() {
-        return preferences.debug
       },
       classes() {
         return {

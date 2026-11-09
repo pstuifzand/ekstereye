@@ -16,8 +16,7 @@ const saved = stored()
 
 export const preferences = Vue.observable({
   theme: saved.theme === 'dark' ? 'dark' : 'light',
-  scale: Number(saved.scale) >= 0.85 && Number(saved.scale) <= 1.3 ? Number(saved.scale) : 1,
-  debug: Boolean(saved.debug) || /(?:\?|&)debug=1\b/.test(window.location.search)
+  scale: Number(saved.scale) >= 0.85 && Number(saved.scale) <= 1.3 ? Number(saved.scale) : 1
 })
 
 export function applyPreferences() {
@@ -26,8 +25,7 @@ export function applyPreferences() {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
       theme: preferences.theme,
-      scale: preferences.scale,
-      debug: preferences.debug
+      scale: preferences.scale
     }))
   } catch (error) {
     // A reader with storage disabled still gets their settings for this session.
@@ -45,9 +43,4 @@ export function stepScale(direction) {
   applyPreferences()
 }
 
-export function toggleDebug() {
-  preferences.debug = !preferences.debug
-  applyPreferences()
-}
-
-export default { preferences, applyPreferences, toggleTheme, stepScale, toggleDebug }
+export default { preferences, applyPreferences, toggleTheme, stepScale }

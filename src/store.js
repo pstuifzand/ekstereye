@@ -25,6 +25,8 @@ function normalizeTimeline(timeline) {
   return timeline
 }
 
+let notificationSeq = 0
+
 const store = new Vuex.Store({
   state() {
     let newState = {
@@ -46,6 +48,7 @@ const store = new Vuex.Store({
       menuActive: false,
       error: '',
       loading: false,
+      notifications: [],
     };
     let loginData = JSON.parse(window.localStorage.getItem('login_data'))
     if (loginData) {
@@ -62,11 +65,19 @@ const store = new Vuex.Store({
   mutations: {
     newChannels(state, channels) {
       state.channels = channels
+      // Channels and timeline are fetched in parallel on load. If the timeline landed
+      // first it could only keep the uid, never the channel object — re-point it now that
+      // the list is here, or the timeline title stays blank for the whole session.
+      if (state.channel && state.channel.uid) {
+        state.channel = _.find(channels, item => item.uid === state.channel.uid) || state.channel
+      }
     },
     newTimeline(state, {channel, timeline}) {
-      // find the channel matching the selected uid
-      channel = _.find(state.channels, item => item.uid === channel.uid)
-      state.channel = channel
+      // find the channel matching the selected uid, but never drop it when the channel
+      // list has not arrived yet: an undefined channel makes the timeline fail to render
+      // and the reader shows "No items" while the items are sitting in the store.
+      const known = _.find(state.channels, item => item.uid === channel.uid)
+      state.channel = known || channel
       state.timeline = normalizeTimeline(timeline) || {items: [], paging: {}}
       state.timelineStack = []
     },
@@ -213,6 +224,12 @@ const store = new Vuex.Store({
     setLoading(state, loading) {
       state.loading = Boolean(loading)
     },
+    addNotification(state, notification) {
+      state.notifications.push(notification)
+    },
+    removeNotification(state, id) {
+      state.notifications = state.notifications.filter(item => item.id !== id)
+    },
     logout(state) {
       if (state.eventSource !== null) {
         state.eventSource.close()
@@ -305,19 +322,67 @@ const store = new Vuex.Store({
     fetchDestinations() {
       return this.dispatch('configQuery', 'destination')
     },
-    micropubPost(_, mf2post) {
-      let micropub = new Micropub({
-        token: this.state.access_token,
-        micropubEndpoint: this.state.micropubEndpoint
+    // micropub-helper reports every rejection as "did not return a location header", which
+    // hides a 401 or a 500 behind a sentence about headers. Post directly so the toast can
+    // say what the endpoint actually answered.
+    micropubPost({dispatch}, {post, success, failure}) {
+      return fetch(this.state.micropubEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + this.state.access_token
+        },
+        body: JSON.stringify(post)
       })
-      return micropub.create(mf2post)
+        .then(response => {
+          if (!response.ok) {
+            const error = new Error('HTTP ' + response.status)
+            error.status = response.status
+            throw error
+          }
+          dispatch('notify', {
+            type: 'success',
+            message: success || 'Posted',
+            url: response.headers.get('Location') || ''
+          })
+          return response.headers.get('Location') || ''
+        })
+        .catch(error => {
+          const reason = error && error.status
+            ? 'HTTP ' + error.status
+            : ((error && error.message) || 'network error')
+          dispatch('notify', {
+            type: 'error',
+            message: (failure || 'Posting failed') + ': ' + reason
+          })
+          // Rethrow so the component keeps its composer open for a retry.
+          throw error
+        })
+    },
+    notify({commit}, {type, message, url, duration}) {
+      const notification = {
+        id: ++notificationSeq,
+        type: type === 'error' ? 'error' : 'success',
+        message,
+        url: url || ''
+      }
+      commit('addNotification', notification)
+      const timeout = duration || (notification.type === 'error' ? 8000 : 4000)
+      window.setTimeout(() => commit('removeNotification', notification.id), timeout)
+      return notification.id
+    },
+    dismissNotification({commit}, id) {
+      commit('removeNotification', id)
     },
     micropubLikeOf(_, url) {
       this.dispatch('micropubPost', {
-        'type': ['h-entry'],
-        'properties': {
-          'like-of': [url]
-        }
+        post: {
+          'type': ['h-entry'],
+          'properties': {
+            'like-of': [url]
+          }
+        },
+        success: 'Liked'
       })
     },
     openChannelCreator({commit}) {

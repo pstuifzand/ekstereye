@@ -34,16 +34,18 @@
       <router-view/>
     </div>
     <LoginModal :active="!this.$store.state.logged_in"></LoginModal>
+    <ToastStack/>
   </div>
 </template>
 
 <script>
   import LoginModal from '@/components/LoginModal'
-  import { preferences, toggleTheme, stepScale, toggleDebug } from '@/preferences'
+  import ToastStack from '@/components/ToastStack'
+  import { preferences, toggleTheme, stepScale } from '@/preferences'
 
   export default {
     name: 'App',
-    components: {LoginModal},
+    components: {LoginModal, ToastStack},
     mounted() {
       window.addEventListener('keydown', this.handleKey)
       let item = window.localStorage.getItem('login_data');
@@ -103,11 +105,6 @@
         const el = event.target
         const tag = el && el.tagName ? el.tagName.toLowerCase() : ''
         if (tag === 'input' || tag === 'textarea' || tag === 'select' || (el && el.isContentEditable)) {
-          return
-        }
-        if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'd') {
-          event.preventDefault()
-          toggleDebug()
           return
         }
         if (event.ctrlKey || event.metaKey || event.altKey) {

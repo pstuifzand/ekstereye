@@ -74,20 +74,24 @@
     methods: {
       post() {
         this.$store.dispatch('micropubPost', {
-          'type': ['h-entry'],
-          'properties': {
-            'content': [this.newPost],
-            'category': this.categories,
-            'mp-syndicate-to': this.selectedTargets,
-            'mp-destination': this.selectedDestinations,
+          post: {
+            'type': ['h-entry'],
+            'properties': {
+              'content': [this.newPost],
+              'category': this.categories,
+              'mp-syndicate-to': this.selectedTargets,
+              'mp-destination': this.selectedDestinations,
+            },
           },
+          success: 'Posted',
+          failure: 'Post failed'
         }).then(() => {
           this.newPost = ''
           this.categories = []
           this.selectedTargets = []
           this.selectedDestinations = []
           this.$emit('close')
-        })
+        }).catch(() => {})
       },
     }
   }
