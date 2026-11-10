@@ -20,12 +20,14 @@
             <button class="button is-small" @click.prevent="openPost">New Post</button>
             <button class="button is-small" @click.prevent="openFeedFollower('')">Add feed</button>
             <button class="button is-small" @click.prevent="feedsIsOpen = true">Feeds</button>
+            <button class="button is-small" @click.prevent="shortcutsIsOpen = true" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">?</button>
           </div>
         </div>
       </div>
       <new-post class="mt-20" v-if="showPost" @close="showPost = false"></new-post>
       <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="channel" :keyboard="true"
-                @older="loadOlder" @newer="loadNewer" @followFeed="openFeedFollower(arguments[0])"></Timeline>
+                @older="loadOlder" @newer="loadNewer" @followFeed="openFeedFollower(arguments[0])"
+                @help="shortcutsIsOpen = true"></Timeline>
     </div>
 
     <div class="column">
@@ -37,6 +39,7 @@
     <feeds-modal :is-open="feedsIsOpen" :initial-channel="channel"
                  @close="feedsIsOpen = false" @browse="browseFeeds"></feeds-modal>
     <search-popup :is-open="searchPopupIsOpen"></search-popup>
+    <shortcut-help :is-open="shortcutsIsOpen" @close="shortcutsIsOpen = false"></shortcut-help>
     <DebugModal :active="this.$store.state.debugVisible"
                 :item="this.$store.state.debugItem"></DebugModal>
   </div>
@@ -53,6 +56,7 @@
   import ShortTimeline from "../components/ShortTimeline";
   import SearchPopup from "../components/SearchPopup";
   import DebugModal from "../components/DebugModal";
+  import ShortcutHelp from "../components/ShortcutHelp";
 
   export default {
     name: 'home',
@@ -66,7 +70,8 @@
       NewPost,
       ShortTimeline,
       SearchPopup,
-      DebugModal
+      DebugModal,
+      ShortcutHelp
     },
 
     data() {
@@ -76,6 +81,7 @@
         feedFollowerQuery: '',
         showPost: false,
         channelsVisible: false,
+        shortcutsIsOpen: false,
       }
     },
 

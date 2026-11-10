@@ -160,7 +160,8 @@ const store = new Vuex.Store({
           let newItemMsg = JSON.parse(evt.data)
           const item = normalizeItem(newItemMsg.item)
           const uid = item && item._id
-          if (state.channel.uid === newItemMsg.channel) {
+          // The stream opens before the first timeline load, so channel can still be null.
+          if (state.channel && state.channel.uid === newItemMsg.channel) {
             if (!uid || !state.timeline.items.some(it => it._id === uid)) {
               state.timeline.items = [item, ...state.timeline.items]
             }
@@ -225,6 +226,26 @@ const store = new Vuex.Store({
     clearError(state) {
       state.error = ''
       state.errorRetry = null
+    },
+    // `u` flips the outline without touching the server: the reader can always put an
+    // entry back, and the next timeline load restores the real state anyway.
+    toggleItemUnread(state, uid) {
+      // An SSE item is the same object in both the channel timeline and the global one,
+      // so flipping each list independently would cancel itself out. Flip each object once.
+      const flipped = new Set()
+      const flip = (list) => {
+        (list || []).forEach((item) => {
+          if (item._id !== uid || flipped.has(item)) {
+            return
+          }
+          flipped.add(item)
+          Vue.set(item, '_is_read', !item._is_read)
+        })
+      }
+      if (state.timeline && state.timeline.items) {
+        flip(state.timeline.items)
+      }
+      flip(state.globalTimeline && state.globalTimeline.items)
     },
     setLoading(state, loading) {
       state.loading = Boolean(loading)

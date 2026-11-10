@@ -82,6 +82,34 @@ describe('timeline mutations', () => {
   })
 })
 
+describe('toggleItemUnread', () => {
+  it('flips the entry once even when both lists hold the same object', async () => {
+    const store = await freshStore()
+    const shared = item('new-1')
+    store.commit('newTimeline', {channel: {uid: 'home'}, timeline: {items: [shared], paging: {}}})
+    store.commit('newGlobalTimeline', {items: [shared]})
+
+    store.commit('toggleItemUnread', shared._id)
+    expect(shared._is_read).toBe(true)
+
+    store.commit('toggleItemUnread', shared._id)
+    expect(shared._is_read).toBe(false)
+  })
+
+  it('leaves the other entries alone', async () => {
+    const store = await freshStore()
+    store.commit('newTimeline', {
+      channel: {uid: 'home'},
+      timeline: {items: [item('a'), item('b')], paging: {}}
+    })
+
+    store.commit('toggleItemUnread', 'a')
+
+    expect(store.state.timeline.items[0]._is_read).toBe(true)
+    expect(store.state.timeline.items[1]._is_read).toBe(false)
+  })
+})
+
 describe('markRead action', () => {
   it('sends a batched request with one entry per uid', async () => {
     const store = await freshStore()
