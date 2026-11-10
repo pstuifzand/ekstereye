@@ -515,7 +515,13 @@ export default {
         }
         if (!this.item.author.name) {
           if (this.item.author.url) {
-            return new URL(this.item.author.url).hostname
+            // A feed can put anything here, and a throw in a computed aborts the render
+            // of the whole card. Show the raw value instead of losing the entry.
+            try {
+              return new URL(this.item.author.url).hostname
+            } catch (e) {
+              return this.item.author.url
+            }
           }
         }
         return this.item.author.name
