@@ -2,7 +2,6 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import Micropub from 'micropub-helper';
 import { EventSourcePolyfill } from 'event-source-polyfill'
-import _ from "lodash"
 import { setMarkReadSender } from './markRead'
 import { request, setUnauthorizedHandler } from './api'
 
@@ -69,14 +68,14 @@ const store = new Vuex.Store({
       // first it could only keep the uid, never the channel object — re-point it now that
       // the list is here, or the timeline title stays blank for the whole session.
       if (state.channel && state.channel.uid) {
-        state.channel = _.find(channels, item => item.uid === state.channel.uid) || state.channel
+        state.channel = channels.find(item => item.uid === state.channel.uid) || state.channel
       }
     },
     newTimeline(state, {channel, timeline}) {
       // find the channel matching the selected uid, but never drop it when the channel
       // list has not arrived yet: an undefined channel makes the timeline fail to render
       // and the reader shows "No items" while the items are sitting in the store.
-      const known = _.find(state.channels, item => item.uid === channel.uid)
+      const known = state.channels.find(item => item.uid === channel.uid)
       state.channel = known || channel
       state.timeline = normalizeTimeline(timeline) || {items: [], paging: {}}
       state.timelineStack = []
@@ -161,12 +160,12 @@ const store = new Vuex.Store({
           const item = normalizeItem(newItemMsg.item)
           const uid = item && item._id
           if (state.channel.uid === newItemMsg.channel) {
-            if (!uid || !_.some(state.timeline.items, it => it._id === uid)) {
+            if (!uid || !state.timeline.items.some(it => it._id === uid)) {
               state.timeline.items = [item, ...state.timeline.items]
             }
           }
-          if (!uid || !_.some(state.globalTimeline.items, it => it._id === uid)) {
-            state.globalTimeline.items = _.takeRight([...state.globalTimeline.items, item], 10)
+          if (!uid || !state.globalTimeline.items.some(it => it._id === uid)) {
+            state.globalTimeline.items = [...state.globalTimeline.items, item].slice(-10)
           }
         } catch (e) {
           // eslint-disable-next-line
@@ -175,7 +174,7 @@ const store = new Vuex.Store({
       })
       state.eventSource.addEventListener('new item in channel', evt => {
         let msg = JSON.parse(evt.data)
-        let channel = _.find(state.channels, item => item.uid === msg.uid)
+        let channel = state.channels.find(item => item.uid === msg.uid)
         if (channel) {
           channel.unread = msg.unread
         }
@@ -183,7 +182,7 @@ const store = new Vuex.Store({
 
       state.eventSource.addEventListener('new channel', evt => {
         let msg = JSON.parse(evt.data)
-        let channel = _.find(state.channels, it => it.uid === msg.channel.uid)
+        let channel = state.channels.find(it => it.uid === msg.channel.uid)
         if (!channel) {
           state.channels.push(msg.channel)
         }
@@ -191,7 +190,7 @@ const store = new Vuex.Store({
 
       state.eventSource.addEventListener('update channel', evt => {
         let msg = JSON.parse(evt.data)
-        let channel = _.find(state.channels, it => it.uid === msg.channel.uid)
+        let channel = state.channels.find(it => it.uid === msg.channel.uid)
         if (channel) {
           channel.name = msg.channel.name
         }
@@ -199,7 +198,7 @@ const store = new Vuex.Store({
 
       state.eventSource.addEventListener('delete channel', evt => {
         let msg = JSON.parse(evt.data)
-        state.channels = _.filter(state.channels, it => it.uid !== msg.uid)
+        state.channels = state.channels.filter(it => it.uid !== msg.uid)
       })
     },
     newSearchResults(state, items) {
@@ -334,7 +333,7 @@ const store = new Vuex.Store({
     },
     markRead(x, {channel, entry, keepalive}) {
       const entries = Array.isArray(entry)
-        ? _(entry).map(uid => '&entry[]=' + encodeURIComponent(uid)).join("")
+        ? entry.map(uid => '&entry[]=' + encodeURIComponent(uid)).join("")
         : '&entry=' + encodeURIComponent(entry)
       let url = this.state.microsubEndpoint + '?action=timeline&method=mark_read&channel=' + encodeURIComponent(channel) + entries;
       return request(url, {

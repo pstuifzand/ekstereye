@@ -15,7 +15,6 @@
     "dayjs": "^1.11.23",
     "dompurify": "^3.4.17",
     "event-source-polyfill": "^1.0.31",
-    "lodash": "^4.17.21",
     "micropub-helper": "^2.1.1",
     "rel-parser": "^3.0.1",
     "vue": "^2.7.16",
