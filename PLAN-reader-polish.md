@@ -139,7 +139,13 @@ rules are safe; class-level rules inside feed content are not worth preserving.
 
 ---
 
-### Phase 3 — Bugs that survive a reload
+### Phase 3 — Bugs that survive a reload — ALL LANDED
+
+Landed 2026-11-10: 3a `7dbab6a`, 3b `fd6a790`, 3c `afa53fc`, 3d `be80ebf`, 3e `2d4cc4f`.
+Each was reproduced against the mock first and re-checked after: 11 cards instead of 10
+with no `Invalid URL` errors, the paragraph under a slow image moves 0 px instead of 297,
+all four dialogs trap Tab and close on Escape with focus returned, a 500 on feed search
+becomes a toast, and Retry renders the timeline without a reload.
 
 Each step is small, independently revertable, and has one reproduction.
 
