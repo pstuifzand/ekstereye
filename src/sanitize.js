@@ -96,8 +96,23 @@ export function sanitizeHtml(html, base) {
     }
     image.setAttribute('loading', 'lazy')
     image.setAttribute('decoding', 'async')
-    image.removeAttribute('width')
-    image.removeAttribute('height')
+    // Keep plain pixel dimensions: they are the only intrinsic-size hint a remote image
+    // gives the browser, and stripping them makes the text under it jump when the image
+    // arrives. Anything that is not a small integer goes.
+    const isDimension = (value) => {
+      if (typeof value !== 'string' || !/^\d{1,5}$/.test(value.trim())) {
+        return false
+      }
+      const size = Number(value)
+      return size > 0 && size <= 20000
+    }
+    if (!isDimension(image.getAttribute('width')) || !isDimension(image.getAttribute('height'))) {
+      image.removeAttribute('width')
+      image.removeAttribute('height')
+    }
+    if (!image.hasAttribute('alt')) {
+      image.setAttribute('alt', '')
+    }
   })
 
   return template.innerHTML
