@@ -46,6 +46,7 @@ const store = new Vuex.Store({
       debugVisible: false,
       menuActive: false,
       error: '',
+      errorRetry: null,
       loading: false,
       notifications: [],
     };
@@ -217,8 +218,13 @@ const store = new Vuex.Store({
     setError(state, message) {
       state.error = message || ''
     },
+    // What to run again when the failure is retryable; the banner is useless without it.
+    setErrorRetry(state, retry) {
+      state.errorRetry = retry || null
+    },
     clearError(state) {
       state.error = ''
+      state.errorRetry = null
     },
     setLoading(state, loading) {
       state.loading = Boolean(loading)
@@ -269,6 +275,7 @@ const store = new Vuex.Store({
         url += '&before=' + channel.before;
       }
       commit('setLoading', true)
+      commit('clearError')
       return request(url, {token: this.state.access_token})
         .then(response => {
           if (channel.append) {
@@ -278,7 +285,14 @@ const store = new Vuex.Store({
           }
           return response
         })
-        .catch(error => commit('setError', error.message))
+        .catch(error => {
+          commit('setError', error.message)
+          commit('setErrorRetry', {
+            uid: channel.uid,
+            after: channel.after || null,
+            append: Boolean(channel.append)
+          })
+        })
         .then(response => {
           commit('setLoading', false)
           return response
@@ -492,6 +506,14 @@ const store = new Vuex.Store({
     },
     dismissError({commit}) {
       commit('clearError')
+    },
+    retryError({commit, dispatch}) {
+      const retry = this.state.errorRetry
+      if (!retry) {
+        return Promise.resolve()
+      }
+      commit('clearError')
+      return dispatch('fetchTimeline', Object.assign({}, retry))
     },
     sessionExpired({commit}) {
       commit('logout')

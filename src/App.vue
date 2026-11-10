@@ -27,9 +27,12 @@
       </div>
     </nav>
     <div class="container">
-      <div class="notification is-danger error-banner" v-if="error">
+      <div class="notification is-danger error-banner" v-if="error" role="alert">
         <button class="delete" aria-label="dismiss" @click="dismissError"></button>
         {{ error }}
+        <button class="button is-small retry-button" v-if="canRetry" @click="retryError">
+          Retry
+        </button>
       </div>
       <router-view/>
     </div>
@@ -65,6 +68,9 @@
       error() {
         return this.$store.state.error
       },
+      canRetry() {
+        return Boolean(this.$store.state.errorRetry)
+      },
       loggedIn() {
         return this.$store.state.logged_in
       },
@@ -87,6 +93,9 @@
       },
       dismissError () {
         this.$store.dispatch('dismissError')
+      },
+      retryError () {
+        this.$store.dispatch('retryError')
       },
       cycleTheme () {
         toggleTheme()
@@ -125,6 +134,10 @@
 <style>
   .error-banner {
     margin: 12px 10px 0;
+  }
+
+  .retry-button {
+    margin-left: 12px;
   }
 
   #app {
