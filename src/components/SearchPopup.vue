@@ -1,7 +1,7 @@
 <template>
   <div :class="modalClasses">
     <div class="modal-background"></div>
-    <div class="modal-card">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Search">
       <header class="modal-card-head">
         <p class="modal-card-title">Search</p>
         <button class="delete" aria-label="close" @click="close"></button>
@@ -34,9 +34,12 @@
 
 <script>
 import TimelineEntry from '../components/Entry'
+import modalA11y from '@/modal-a11y'
 
 export default {
   name: "SearchPopup",
+  mixins: [modalA11y],
+  modalCloseAction: 'closeSearch',
   components: {
     TimelineEntry
   },

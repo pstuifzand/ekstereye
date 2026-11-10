@@ -1,7 +1,7 @@
 <template>
   <div :class="{modal: true, 'is-active': isOpen}">
     <div class="modal-background"></div>
-    <div class="modal-card feeds-card">
+    <div class="modal-card feeds-card" role="dialog" aria-modal="true" aria-label="Feeds">
       <header class="modal-card-head">
         <p class="modal-card-title">Feeds</p>
         <button class="delete" aria-label="close" @click="close"></button>
@@ -59,8 +59,11 @@
 </template>
 
 <script>
+  import modalA11y from '@/modal-a11y'
+
   export default {
     name: 'FeedsModal',
+    mixins: [modalA11y],
     props: ['isOpen', 'initialChannel'],
 
     data() {

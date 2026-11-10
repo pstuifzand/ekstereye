@@ -1,7 +1,7 @@
 <template>
   <div :class="modalClasses">
     <div class="modal-background"></div>
-    <div class="modal-card">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Add feed">
       <header class="modal-card-head">
         <p class="modal-card-title">Add feed to {{ channel.name }}</p>
         <button class="delete" aria-label="close" @click="close"></button>
@@ -46,9 +46,11 @@
   import Timeline from '../components/Timeline';
   import FeedChooser from "./FeedChooser";
   import { request } from '@/api';
+  import modalA11y from '@/modal-a11y';
 
   export default {
     name: "FeedFollower",
+    mixins: [modalA11y],
     components: {FeedChooser, Timeline},
     props: ['isOpen', 'initialChannel', 'initialQuery'],
 

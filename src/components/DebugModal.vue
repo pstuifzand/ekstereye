@@ -1,7 +1,7 @@
 <template>
   <div :class="classes">
     <div class="modal-background"></div>
-    <div class="modal-card">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Item JSON">
       <header class="modal-card-head">
         <p class="modal-card-title">Debug</p>
         <button class="delete" aria-label="close" @click="close"></button>
@@ -15,8 +15,13 @@
 </template>
 
 <script>
+  import modalA11y from '@/modal-a11y'
+
   export default {
     name: "DebugModal",
+    mixins: [modalA11y],
+    modalOpenProp: 'active',
+    modalCloseAction: 'closeDebug',
     props: ['active', 'item'],
     computed: {
       classes() {
