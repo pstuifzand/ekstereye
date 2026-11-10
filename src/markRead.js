@@ -43,12 +43,13 @@ export function enqueueMarkRead(channel, uid) {
 function takeBatches() {
   const batches = []
   queues.forEach((uids, channel) => {
-    if (uids.size === 0) {
-      return
+    // Drain the queue, not just the first batch: marking a long list read at once used
+    // to leave everything past the fiftieth uid waiting for a later enqueue.
+    while (uids.size > 0) {
+      const batch = Array.from(uids).slice(0, MAX_BATCH)
+      batch.forEach(uid => uids.delete(uid))
+      batches.push({channel, uids: batch})
     }
-    const batch = Array.from(uids).slice(0, MAX_BATCH)
-    batch.forEach(uid => uids.delete(uid))
-    batches.push({channel, uids: batch})
   })
   queues.forEach((uids, channel) => {
     if (uids.size === 0) {
