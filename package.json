@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
+    "@fullhuman/postcss-purgecss": "^9.1.0",
     "@vitejs/plugin-vue2": "^2.3.4",
     "eslint": "^10.14.0",
     "eslint-plugin-vue": "^10.12.0",
