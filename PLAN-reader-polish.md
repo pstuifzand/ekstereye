@@ -98,7 +98,14 @@ timeline. Revert is one commit plus one redeploy.
 
 ---
 
-### Phase 2 — Stop shipping 73 kB of lodash for four functions
+### Phase 2 — Stop shipping 73 kB of lodash for four functions — LANDED in `aee2c00` + `aac11f5`
+
+Landed 2026-11-10. lodash is out (`aee2c00`, JS 482.67 → 408.12 kB, gzip 177.14 →
+149.50) and PurgeCSS is in (`aac11f5`, CSS 217.00 → 48.02 kB, gzip 30.21 → 9.01).
+Live after the deploy: 148,182 bytes of gzip JS and 9,161 of CSS, hashes matching
+`dist/index.html`. The purge was proven by diffing 23 computed properties on 19
+elements across both themes, the debug modal, the login screen and four other
+modals against an unpurged build: 0 differences.
 
 **Problem.** `src/store.js:4` imports `_` from `"lodash"` and the tree uses exactly
 four methods: `_.find` (5×), `_.some` (2×), `_.takeRight` (1×), `_.filter` (1×).
