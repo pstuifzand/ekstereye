@@ -263,7 +263,19 @@ stuck spinner and an unguarded `new URL` survived several rounds of review.
 
 ---
 
-### Phase 5 — Reader ergonomics and unbounded DOM
+### Phase 5 — Reader ergonomics and unbounded DOM — LANDED in `27022f1`
+
+Landed 2026-11-10. Rendered window capped at 300 with a "Show N earlier entries" button
+that anchors on the card at the top of the viewport (measured 220px -> 220px);
+per-channel scroll, filter and selection remembered in a module map (route changes
+destroy the component); tab title tracks channel and unread; `u` toggles the outline
+locally; `?` opens a shortcut sheet through the modal mixin; the third column is sticky
+and drops into the flow below 1024px.
+
+The `u` mutation needed a second pass: an SSE item is the same object in both the
+channel and the global list, so flipping per list cancelled itself out. The SSE
+`new item` handler also read `state.channel.uid` unguarded and threw when the stream
+opened before the first timeline load.
 
 Only after 1–4 land. This phase changes rendering behaviour, so it needs the browser
 verification recipe, not just tests.
