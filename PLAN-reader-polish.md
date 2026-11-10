@@ -149,6 +149,12 @@ becomes a toast, and Retry renders the timeline without a reload.
 
 Each step is small, independently revertable, and has one reproduction.
 
+Follow-up (not in the original list, reported against the deployed reader): `4722077`
+made the keyboard selection follow the entry by `_id` and read the cards from the DOM
+instead of `$refs.entries`, which is in mount order. Before it, auto-loading a page
+dropped the selection and the next `j` scrolled back to the top, and after an SSE
+prepend the scroll targeted a different card than the one highlighted.
+
 #### 3a — A bad author URL crashes the card (`src/components/Entry.vue:512-522`)
 
 `outside_author_name` calls `new URL(this.item.author.url).hostname` unguarded;
