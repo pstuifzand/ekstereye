@@ -69,6 +69,9 @@
       return {
         state: 'new',
         selectedIndex: -1,
+        // Which entry is selected, by id: an index points at a different card as soon
+        // as a page is appended or an SSE item arrives at the top.
+        selectedId: null,
         kindFilter: 'all',
         newSinceId: null
       }
@@ -174,26 +177,36 @@
         const tag = (el.tagName || '').toLowerCase()
         return tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable
       },
-      renderedEntries() {
-        const list = this.$refs.entries
-        if (!list) {
+      // A v-for ref array is in mount order, not render order: once an SSE item is
+      // prepended or a page is appended, $refs.entries[index] is a different card than
+      // visibleItems[index]. The rendered cards are read from the DOM instead, which is
+      // always in the order the reader sees.
+      entryNodes() {
+        if (!this.$el || !this.$el.querySelectorAll) {
           return []
         }
-        return Array.isArray(list) ? list : [list]
+        return Array.from(this.$el.querySelectorAll('.timeline--item'))
+      },
+      componentFor(id) {
+        const list = this.$refs.entries
+        const entries = Array.isArray(list) ? list : (list ? [list] : [])
+        return entries.find(entry => entry.$props && entry.$props.item &&
+          entry.$props.item._id === id) || null
       },
       selectIndex(index) {
-        const entries = this.renderedEntries()
-        if (!entries.length) {
+        const count = this.entryNodes().length
+        if (!count) {
           return
         }
-        const next = Math.max(0, Math.min(entries.length - 1, index))
+        const next = Math.max(0, Math.min(count - 1, index))
         this.selectedIndex = next
+        const selected = this.visibleItems[next]
+        this.selectedId = selected ? selected._id : null
         this.$nextTick(() => {
-          this.scrollEntryIntoView(entries[next])
+          this.scrollEntryIntoView(this.entryNodes()[next])
         })
       },
-      scrollEntryIntoView(entry) {
-        const el = entry && entry.$el
+      scrollEntryIntoView(el) {
         if (!el) {
           return
         }
@@ -213,15 +226,14 @@
         window.scrollTo({top, behavior: 'smooth'})
       },
       currentEntry() {
-        const entries = this.renderedEntries()
-        if (!entries.length) {
+        if (!this.entryNodes().length) {
           return null
         }
         if (this.selectedIndex < 0) {
           this.selectIndex(0)
-          return entries[0]
+          return this.componentFor(this.selectedId)
         }
-        return entries[this.selectedIndex] || null
+        return this.componentFor(this.selectedId)
       },
       handleKey(event) {
         if (!this.keyboard || this.isTypingTarget(event) || event.ctrlKey || event.metaKey || event.altKey) {
@@ -265,6 +277,7 @@
           }
           case 'Escape':
             this.selectedIndex = -1
+            this.selectedId = null
             break
           default:
             handled = false
@@ -287,6 +300,19 @@
       setKind(kind) {
         this.kindFilter = kind
         this.selectedIndex = -1
+        this.selectedId = null
+      },
+      syncSelection() {
+        // Re-derive the index from the id after the list changed shape; -1 means the
+        // selected entry left the timeline (another channel, a filtered-out kind).
+        if (this.selectedId === null) {
+          return
+        }
+        const index = this.visibleItems.findIndex((item) => item._id === this.selectedId)
+        this.selectedIndex = index
+        if (index < 0) {
+          this.selectedId = null
+        }
       },
       markAllRead() {
         // Only what is on screen: the server has no "everything older" sweep.
@@ -305,14 +331,16 @@
         // at the first entry that is still visible. Reads stop at that boundary instead
         // of touching every card on every frame.
         const channel = this.channel && this.channel.uid
-        const children = this.$children
-        for (let i = 0; i < children.length; i += 1) {
-          const child = children[i]
-          const item = child.$props.item
-          if (!item || item._is_read || !child.$el) {
+        // DOM order is render order; $children is mount order and would sweep the wrong
+        // entries once a page is appended or an SSE item is prepended.
+        const nodes = this.entryNodes()
+        const items = this.visibleItems
+        for (let i = 0; i < nodes.length; i += 1) {
+          const item = items[i]
+          if (!item || item._is_read) {
             continue
           }
-          if (child.$el.getBoundingClientRect().bottom > 100) {
+          if (nodes[i].getBoundingClientRect().bottom > 100) {
             break
           }
           this.markRead(channel, item)
@@ -345,11 +373,14 @@
     watch: {
       timeline() {
         // Appending a page keeps the filter; only the channel decides what is in it.
-        this.selectedIndex = -1
+        // The selection follows its entry by id instead of being dropped: resetting it
+        // here sent the reader back to the first card after every auto-loaded page.
         this.snapshotNewSince()
+        this.$nextTick(this.syncSelection)
       },
       channel() {
         this.selectedIndex = -1
+        this.selectedId = null
         this.kindFilter = 'all'
         this.newSinceId = null
         this.snapshotNewSince()
