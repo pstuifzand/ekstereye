@@ -1,10 +1,16 @@
 <template>
   <div :class="this.className">
-    <div class="timeline-filter" v-if="kinds.length > 1">
-      <button type="button" :class="{'is-active': kindFilter === 'all'}" @click="setKind('all')">All</button>
-      <button type="button" v-for="kind in kinds" :key="kind.kind"
-              :class="{'is-active': kindFilter === kind.kind}" @click="setKind(kind.kind)">
-        {{ kind.label }}<span class="count">{{ kind.count }}</span>
+    <div class="timeline-toolbar" v-if="kinds.length > 1 || unreadCount">
+      <div class="timeline-filter" v-if="kinds.length > 1">
+        <button type="button" :class="{'is-active': kindFilter === 'all'}" @click="setKind('all')">All</button>
+        <button type="button" v-for="kind in kinds" :key="kind.kind"
+                :class="{'is-active': kindFilter === kind.kind}" @click="setKind(kind.kind)">
+          {{ kind.label }}<span class="count">{{ kind.count }}</span>
+        </button>
+      </div>
+      <button v-if="unreadCount" type="button" class="button is-small mark-all-read" @click="markAllRead"
+              title="Marks the entries loaded here; older pages stay unread">
+        Mark all read<span class="count">{{ unreadCount }}</span>
       </button>
     </div>
     <template v-for="(item, index) in visibleItems">
@@ -23,11 +29,7 @@
     <div v-if="loading && items.length === 0" class="level">
       <div class="level-item"><span class="timeline-status">Loading…</span></div>
     </div>
-    <div class="level timeline-pager">
-      <div class="level-item" v-if="unreadCount">
-        <button class="button is-small" @click="markAllRead"
-                title="Marks the entries loaded here; older pages stay unread">Mark all read</button>
-      </div>
+    <div class="level timeline-pager" v-if="hasNewer || hasOlder">
       <div class="level-item">
         <button class="button is-small" @click="newer" v-if="hasNewer">Newer</button>
       </div>
@@ -136,6 +138,17 @@
           return
         }
         this.$emit('newer')
+        // Trimming the list while the reader sits at the bottom leaves the sentinel in view,
+        // so auto-loading would append the same page straight back. Jump to the top of the
+        // page that is now shown instead.
+        this.$nextTick(() => {
+          const el = this.$el
+          if (!el) {
+            return
+          }
+          const top = window.scrollY + el.getBoundingClientRect().top - 80
+          window.scrollTo({top: Math.max(0, top)})
+        })
       },
       observeSentinel() {
         if (!('IntersectionObserver' in window) || !this.$refs.sentinel) {
@@ -391,35 +404,60 @@
     white-space: nowrap;
   }
 
+  .timeline-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
   .timeline-filter {
     display: flex;
     gap: 6px;
-    margin-bottom: 12px;
   }
 
   .timeline-filter button {
     background: none;
-    border: 1px solid #dbdbdb;
+    border: 1px solid var(--line, #dbdbdb);
     border-radius: 999px;
     padding: 2px 10px;
     font-size: .8rem;
-    color: #4a4a4a;
+    color: var(--fg, #4a4a4a);
     cursor: pointer;
   }
 
   .timeline-filter button.is-active {
-    background: #363636;
-    border-color: #363636;
-    color: #fff;
+    background: var(--sel-bar, #363636);
+    border-color: var(--sel-bar, #363636);
+    color: var(--bg, #fff);
   }
 
-  .timeline-filter .count {
+  .timeline-filter .count,
+  .mark-all-read .count {
     opacity: .6;
     margin-left: 5px;
   }
 
+  /* Marking read is not paging, so it lives above the list with the filters. */
+  .mark-all-read {
+    margin-left: auto;
+  }
+
   .timeline-sentinel {
     height: 1px;
+  }
+
+  /* Auto-loading appends below the list, which pushed these buttons down the page just as
+     the reader reached for them. Pinned to the bottom edge, they stay where the cursor is. */
+  .timeline-pager {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin-top: 8px;
+    padding: 10px 0;
+    background: var(--bg, #fff);
+    border-top: 1px solid var(--line, #e4e4e4);
   }
 
   .timeline-status {
