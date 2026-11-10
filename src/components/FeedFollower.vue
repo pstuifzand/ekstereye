@@ -26,8 +26,11 @@
           </div>
         </div>
 
+        <p class="empty-results" v-if="searched && !loading && feeds.length === 0">
+          No feeds matched "{{ query }}".
+        </p>
         <div class="results">
-          <feed-chooser :feed="feed" @showFeed="showFeed(feed)" @addFeed="addFeed(feed)" v-for="(feed, i) in feeds" :key="i"/>
+          <feed-chooser :feed="feed" @showFeed="showFeed(feed)" @addFeed="addFeed(feed)" v-for="feed in feeds" :key="feed.url"/>
         </div>
 
         <Timeline class="timeline" :timeline="timeline" :channel="channel"></Timeline>
@@ -42,6 +45,7 @@
 <script>
   import Timeline from '../components/Timeline';
   import FeedChooser from "./FeedChooser";
+  import { request } from '@/api';
 
   export default {
     name: "FeedFollower",
@@ -54,7 +58,8 @@
         feeds: [],
         timeline: {items: [], paging: {}},
         query: '',
-        loading: false
+        loading: false,
+        searched: false
       }
     },
 
@@ -76,6 +81,8 @@
         if (newVal) {
           this.query = this.initialQuery
           this.channel = this.initialChannel
+          this.feeds = []
+          this.searched = false
 
           this.$nextTick(function () {
             this.$refs.query.focus()
@@ -94,47 +101,48 @@
         this.$emit('close')
       },
       search() {
-        let url = this.$store.state.microsubEndpoint + '?action=search&query=' + encodeURIComponent(this.query)
+        const url = this.$store.state.microsubEndpoint + '?action=search&query=' + encodeURIComponent(this.query)
         this.loading = true
-        return fetch(url, {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + this.$store.state.access_token
-          }
-        }).then((res) => {
-          return res.json()
-        }).then((res) => {
-          if (!res.results) {
+        // Through the shared client so a 401 resets the session and anything else lands
+        // in a toast; the bare fetch here left the spinner running and said nothing.
+        return request(url, {method: 'POST', token: this.$store.state.access_token})
+          .then((res) => {
+            this.loading = false
+            this.searched = true
+            const results = (res && res.results) || []
+            results.forEach(item => {
+              item.loading = false
+            })
+            this.feeds = results
+          })
+          .catch((error) => {
             this.loading = false
             this.feeds = []
-            return
-          }
-
-          res.results.forEach(item => {
-            item.loading = false
+            this.$store.dispatch('notify', {
+              type: 'error',
+              message: 'Could not search for feeds: ' + error.message
+            })
           })
-
-          this.feeds = res.results
-          this.loading = false
-        })
       },
       showFeed(feed) {
         feed.loading = true
-        let url = this.$store.state.microsubEndpoint
-        let formData = new URLSearchParams();
+        const url = this.$store.state.microsubEndpoint
+        const formData = new URLSearchParams();
         formData.set('action', 'preview')
         formData.set('url', feed.url)
-        return fetch(url, {
+        return request(url, {
           method: 'POST',
           body: formData,
-          headers: {
-            'Authorization': 'Bearer ' + this.$store.state.access_token
-          }
+          token: this.$store.state.access_token
         }).then((res) => {
-          return res.json()
-        }).then((res) => {
-          this.timeline = res
+          this.timeline = res || {items: [], paging: {}}
           feed.loading = false
+        }).catch((error) => {
+          feed.loading = false
+          this.$store.dispatch('notify', {
+            type: 'error',
+            message: 'Could not preview that feed: ' + error.message
+          })
         })
       },
       addFeed(feed) {
@@ -159,6 +167,11 @@
     display: grid;
     grid-template-columns: 52px auto auto auto;
     grid-gap: 6px;
+  }
+
+  .empty-results {
+    padding: 8px 0;
+    color: var(--muted, #7a7a7a);
   }
 
 </style>
