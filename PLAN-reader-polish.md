@@ -218,7 +218,19 @@ restored, and the entries appear without a page reload.
 
 ---
 
-### Phase 4 — A test floor (new, `vitest` + `jsdom`)
+### Phase 4 — A test floor (new, `vitest` + `jsdom`) — LANDED in `4ac2391` + `9806ca2` (+ `199d777`)
+
+Landed 2026-11-10. `npm test` runs 39 tests over sanitize, entry-kind, relative-time,
+markRead and the store mutations; CI runs it between lint and build. Two guards were
+deleted to prove the suite bites, and two tests went red.
+
+Binaries: vitest 5, jsdom 26 (jsdom 31 wants `tldts-core@^7.4.21`, which the registry
+does not have — pin 26), `@vue/test-utils` 1.3 for the eventual component tests.
+
+Writing the mark-read tests found a real bug, fixed in `4ac2391`: `takeBatches` lifted
+one batch of 50 per channel per flush and never rescheduled the rest, so "Mark all read"
+on a long list left every entry past the fiftieth queued. `199d777` fixed a test that
+assumed the runner's timezone (`absoluteTime` formats locally by design).
 
 **Problem.** Verification today is `lint` + `build` + manual Chromium. That is why a
 stuck spinner and an unguarded `new URL` survived several rounds of review.
