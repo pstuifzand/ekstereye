@@ -53,7 +53,7 @@
         <div>
           <div class="level entry-actions" @click.stop>
             <div class="level-item">
-              <button class="is-link" v-if="hasHiddenContent" @click.prevent.stop="toggleHiddenContent">
+              <button class="is-link" v-if="hasHiddenContent && !readerMode" @click.prevent.stop="toggleHiddenContent">
                 {{ hiddenContentVisible ? 'Show less' : 'Read more' }}
               </button>
             </div>
@@ -793,6 +793,12 @@ export default {
 
   .reading-detail .card-content { padding-top: 0; }
 
+  .reading-detail .content-container {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .reading-detail .content-container::after { display: none; }
   .reading-detail .html-body { font-size: 1.12rem; line-height: 1.75; }
 
   .entry-actions {
