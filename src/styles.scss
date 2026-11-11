@@ -148,6 +148,30 @@ a {
   color: var(--fg);
 }
 
+/* Theme: two buttons, three states. The explicit choice is filled; with neither filled
+   the reader is following the system setting. Sized from the button itself so the pair
+   lines up with A-/A+ beside it. */
+.theme-switch {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.theme-switch .button.theme-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.4rem;
+  padding-left: 0;
+  padding-right: 0;
+  line-height: 1.25rem;
+}
+
+.theme-switch .button.theme-button.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+
 .button.is-primary {
   background: var(--accent);
   border-color: var(--accent);

@@ -14,9 +14,22 @@
         <div :class="{'navbar-menu':true,'is-active':menuActive}">
           <div class="navbar-end">
             <div class="buttons reader-controls">
-              <button class="button" @click="cycleTheme" :title="theme === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'">
-                {{ theme === 'dark' ? 'Light' : 'Dark' }}
-              </button>
+              <div class="theme-switch" role="group" aria-label="Colour theme">
+                <button type="button" class="button theme-button"
+                        :class="{'is-active': theme === 'light'}"
+                        :aria-pressed="theme === 'light' ? 'true' : 'false'"
+                        :title="theme === 'light' ? 'Light theme — press again to follow the system setting' : 'Light theme'"
+                        @click="setTheme('light')">
+                  <span aria-hidden="true">&#9788;</span>
+                </button>
+                <button type="button" class="button theme-button"
+                        :class="{'is-active': theme === 'dark'}"
+                        :aria-pressed="theme === 'dark' ? 'true' : 'false'"
+                        :title="theme === 'dark' ? 'Dark theme — press again to follow the system setting' : 'Dark theme'"
+                        @click="setTheme('dark')">
+                  <span aria-hidden="true">&#9790;</span>
+                </button>
+              </div>
               <button class="button" @click="smaller" title="Smaller text">A&minus;</button>
               <button class="button" @click="bigger" title="Larger text">A+</button>
               <button class="button" @click="openSearch">Search</button>
@@ -44,7 +57,7 @@
 <script>
   import LoginModal from '@/components/LoginModal'
   import ToastStack from '@/components/ToastStack'
-  import { preferences, toggleTheme, stepScale } from '@/preferences'
+  import { preferences, setTheme as applyTheme, stepScale } from '@/preferences'
   import {getConnection, disconnect} from '@/ekConnection'
 
   export default {
@@ -106,8 +119,8 @@
       retryError () {
         this.$store.dispatch('retryError')
       },
-      cycleTheme () {
-        toggleTheme()
+      setTheme (theme) {
+        applyTheme(theme)
       },
       smaller () {
         stepScale(-1)
