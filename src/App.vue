@@ -13,16 +13,17 @@
         </div>
         <div :class="{'navbar-menu':true,'is-active':menuActive}">
           <div class="navbar-end">
-            <div class="buttons reader-controls">
-              <div class="theme-switch" role="group" aria-label="Colour theme">
-                <button type="button" class="button theme-button"
+            <div class="reader-controls">
+              <div class="control-group theme-switch" role="group" aria-label="Colour theme"
+                   :title="theme === 'system' ? 'Following the system setting — pick \u263c or \u263e to override' : 'Press the chosen one again to follow the system setting'">
+                <button type="button" class="button icon-button"
                         :class="{'is-active': theme === 'light'}"
                         :aria-pressed="theme === 'light' ? 'true' : 'false'"
                         :title="theme === 'light' ? 'Light theme — press again to follow the system setting' : 'Light theme'"
                         @click="setTheme('light')">
                   <span aria-hidden="true">&#9788;</span>
                 </button>
-                <button type="button" class="button theme-button"
+                <button type="button" class="button icon-button"
                         :class="{'is-active': theme === 'dark'}"
                         :aria-pressed="theme === 'dark' ? 'true' : 'false'"
                         :title="theme === 'dark' ? 'Dark theme — press again to follow the system setting' : 'Dark theme'"
@@ -30,10 +31,12 @@
                   <span aria-hidden="true">&#9790;</span>
                 </button>
               </div>
-              <button class="button" @click="smaller" title="Smaller text">A&minus;</button>
-              <button class="button" @click="bigger" title="Larger text">A+</button>
-              <button class="button" @click="openSearch">Search</button>
-              <button class="button" v-if="loggedIn" :title="me" @click="signOut">Sign out</button>
+              <div class="control-group size-switch" role="group" aria-label="Text size">
+                <button type="button" class="button icon-button" @click="smaller" title="Smaller text">A&minus;</button>
+                <button type="button" class="button icon-button" @click="bigger" title="Larger text">A+</button>
+              </div>
+              <button type="button" class="button search-button" @click="openSearch" title="Search (s)">Search</button>
+              <button type="button" class="button signout-button" v-if="loggedIn" :title="me" @click="signOut">Sign out</button>
             </div>
           </div>
         </div>

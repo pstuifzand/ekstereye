@@ -148,28 +148,68 @@ a {
   color: var(--fg);
 }
 
-/* Theme: two buttons, three states. The explicit choice is filled; with neither filled
-   the reader is following the system setting. Sized from the button itself so the pair
-   lines up with A-/A+ beside it. */
-.theme-switch {
-  display: inline-flex;
-  gap: 2px;
+/* Reader controls: two segmented pairs (theme, text size) then the two single actions.
+   Buttons in a pair share their borders so the pair reads as one control, and the
+   explicit theme choice is filled while "neither filled" means following the system. */
+.reader-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.theme-switch .button.theme-button {
+.reader-controls .control-group {
+  display: inline-flex;
+}
+
+.reader-controls .control-group .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.4rem;
+  border-radius: 0;
+  margin-bottom: 0;
+}
+
+.reader-controls .control-group .button + .button {
+  margin-left: -1px;
+}
+
+.reader-controls .control-group .button:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.reader-controls .control-group .button:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.reader-controls .icon-button {
+  min-width: 2.5rem;
   padding-left: 0;
   padding-right: 0;
   line-height: 1.25rem;
 }
 
-.theme-switch .button.theme-button.is-active {
+.reader-controls .button.is-active {
+  /* The filled button must sit above its neighbour's shared border. */
+  position: relative;
+  z-index: 1;
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-fg);
+}
+
+/* Search is the one control the reader reaches for while reading; Sign out is secondary,
+   so it stays quiet and a little apart from the rest. */
+.reader-controls .signout-button {
+  margin-left: 4px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.reader-controls .signout-button:hover,
+.reader-controls .signout-button:focus {
+  background: var(--button-bg);
+  border-color: var(--button-border);
+  color: var(--fg);
 }
 
 .button.is-primary {
