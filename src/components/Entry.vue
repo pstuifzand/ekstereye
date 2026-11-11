@@ -1,6 +1,13 @@
 <template>
   <div>
-    <div :class="classes" @click="markRead(); $emit('select')">
+    <div :class="[classes, {'reading-detail': readerMode}]" @click="markRead(); $emit('select')">
+      <div v-if="readerMode" class="reader-action-bar" @click.stop>
+        <button type="button" class="entry-action" @click="like">Like</button>
+        <button type="button" class="entry-action" @click.prevent="openReply">Reply</button>
+        <button type="button" class="entry-action" @click.prevent="openRepost">Repost</button>
+        <button type="button" class="entry-action" @click.prevent="openBookmark">Bookmark</button>
+        <button type="button" class="entry-action" @click.prevent.stop="copyLink">{{ copied ? 'Copied' : 'Copy link' }}</button>
+      </div>
       <div class="card-image" v-if="mainImage">
         <figure class="image">
           <img :src="mainImage" loading="lazy" decoding="async" alt=""/>
@@ -50,7 +57,7 @@
                 {{ hiddenContentVisible ? 'Show less' : 'Read more' }}
               </button>
             </div>
-            <div class="level-item">
+            <div class="level-item" v-if="!readerMode">
                 <small>
                 <span v-if="showFooterButtons">
                 <button type="button" class="entry-action" @click="like">Like</button>
@@ -152,7 +159,11 @@ export default {
       EntryCategories,
       SyndicationButtons
     },
-    props: ['item', 'isSelected'],
+    props: {
+      item: Object,
+      isSelected: Boolean,
+      readerMode: { type: Boolean, default: false }
+    },
 
     data() {
       return {
@@ -767,6 +778,23 @@ export default {
   }
 
   /* Actions are furniture until the reader is on the card. */
+  .reader-action-bar {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 10px;
+    margin: -12px -12px 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--card);
+  }
+
+  .reading-detail .card-content { padding-top: 0; }
+
+  .reading-detail .html-body { font-size: 1.12rem; line-height: 1.75; }
+
   .entry-actions {
     opacity: 0;
     transition: opacity .12s ease-in-out;

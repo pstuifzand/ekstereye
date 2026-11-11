@@ -1,5 +1,17 @@
 <template>
-  <div class="home columns">
+  <div class="home" :class="{'three-column': threeColumn}">
+    <div class="layout-switch-row"><button class="button is-small" type="button" @click="toggleLayout">{{ threeColumn ? 'Current layout' : 'Three-column layout' }}</button></div>
+    <div v-if="threeColumn" class="reader-columns">
+      <aside class="reader-channels">
+        <Channels :channels="channels"><div slot-scope="{ channel }"><Channel :channel="channel" @channel-selected="selectChannel" /></div></Channels>
+      </aside>
+      <section class="reader-list">
+        <h1 class="title is-5">{{ channel.name }}</h1>
+        <Timeline :timeline="$store.state.timeline" :channel="channel" :keyboard="true" @selected="selectedItem = $event" @older="loadOlder" @newer="loadNewer" @followFeed="openFeedFollower($event)" />
+      </section>
+      <section class="reader-detail" aria-label="Selected item"><Entry v-if="selectedItem" :item="selectedItem" :is-selected="true" :reader-mode="true" /><p v-else class="detail-empty">Select an item to read it.</p></section>
+    </div>
+    <div v-else class="home columns">
     <div class="column" style="padding-top: 20px">
       <button class="channels-toggle button" type="button" @click="showChannels">Channels</button>
 
@@ -47,6 +59,7 @@
 
 <script>
   import Timeline from '../components/Timeline.vue'
+  import Entry from '../components/Entry.vue'
   import Channels from '../components/Channels.vue'
   import Channel from '../components/Channel.vue'
   import ChannelCreator from '../components/ChannelCreator.vue'
@@ -71,7 +84,8 @@
       ShortTimeline,
       SearchPopup,
       DebugModal,
-      ShortcutHelp
+      ShortcutHelp,
+      Entry
     },
 
     data() {
@@ -82,6 +96,8 @@
         showPost: false,
         channelsVisible: false,
         shortcutsIsOpen: false,
+        threeColumn: window.localStorage.getItem('reader-layout') === 'three-column',
+        selectedItem: null,
       }
     },
 
@@ -110,6 +126,10 @@
     },
 
     methods: {
+      toggleLayout() {
+        this.threeColumn = !this.threeColumn
+        window.localStorage.setItem('reader-layout', this.threeColumn ? 'three-column' : 'current')
+      },
       openFeedFollower(query) {
         this.feedFollowerIsOpen = true
         this.feedFollowerQuery = query
@@ -122,6 +142,7 @@
         this.openFeedFollower('')
       },
       selectChannel(channel) {
+        this.selectedItem = null
         this.$store.dispatch('switchChannel', channel).then(() => {
           this.$store.dispatch('fetchTimeline', channel).then(() => {
             window.scrollTo({top: 0})
@@ -165,6 +186,20 @@
     },
 
     watch: {
+      '$store.state.timeline.items': {
+        immediate: true,
+        handler(items) {
+          if (this.threeColumn && !this.selectedItem && items && items.length) {
+            this.selectedItem = items.find(item => item.type === 'entry' || item.type === 'cite') || null
+          }
+        }
+      },
+      threeColumn(enabled) {
+        if (enabled && !this.selectedItem) {
+          const items = this.$store.state.timeline.items || []
+          this.selectedItem = items.find(item => item.type === 'entry' || item.type === 'cite') || null
+        }
+      },
       loggedIn(value) {
         // Signing in from the modal has to load the feed; mounted() already ran.
         if (value) {
@@ -197,6 +232,15 @@
   .home {
     padding: 10px;
   }
+
+  .layout-switch-row { padding: 4px 0; }
+  .reader-columns { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(260px, 1fr) minmax(400px, 2fr); gap: 16px; align-items: start; }
+  .reader-channels, .reader-list, .reader-detail { min-width: 0; height: calc(100vh - 115px); overflow: auto; position: sticky; top: 70px; }
+  .reader-detail { padding: 12px; background: var(--card); border: 1px solid var(--line); }
+  .reader-detail .entry-actions { position: sticky; top: 0; z-index: 2; background: var(--card); opacity: 1; }
+  .detail-empty { color: var(--muted); padding: 24px; }
+  @media (max-width: 900px) { .reader-columns { grid-template-columns: minmax(150px, 1fr) minmax(220px, 2fr); } .reader-detail { grid-column: 1 / -1; position: static; height: auto; } }
+  @media (max-width: 600px) { .reader-columns { display: block; } .reader-channels { height: auto; position: static; } .reader-list { height: 55vh; position: static; } .reader-detail { margin-top: 12px; } }
 
   .timeline {
     margin-top: 20px;

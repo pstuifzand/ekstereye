@@ -229,6 +229,7 @@
         this.selectedIndex = next
         const selected = this.visibleItems[next]
         this.selectedId = selected ? selected._id : null
+        this.$emit('selected', selected || null)
         this.$nextTick(() => {
           this.scrollEntryIntoView(this.entryNodes()[next])
         })
