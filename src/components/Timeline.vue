@@ -293,6 +293,9 @@
         switch (event.key) {
           case 'j':
             this.selectIndex(this.selectedIndex + 1)
+            if (this.selectedIndex === this.visibleItems.length - 1) {
+              this.loadMore(true)
+            }
             break
           case 'k':
             this.selectIndex(this.selectedIndex - 1)
