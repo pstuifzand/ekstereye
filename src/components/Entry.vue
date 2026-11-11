@@ -24,7 +24,7 @@
             </p>
           </div>
 
-          <div ref="content-container" :class="{'content': true, 'content-container': true, 'open': hiddenContentVisible}">
+          <div ref="content-container" :class="{'content': true, 'content-container': true, 'open': hiddenContentVisible, 'clamped': hasHiddenContent}">
             <div v-if="isRef">
               <div><small><a :href="outside_author_url">{{ outside_author_name }}</a>&nbsp;<span v-text="refText"></span>:</small></div>
             </div>
@@ -702,8 +702,10 @@ export default {
     overflow: visible;
   }
 
-  /* A fade says "there is more" without an arrow in the middle of the text. */
-  .kind-article .content-container:not(.open)::after {
+  /* A fade says "there is more" without an arrow in the middle of the text, so it
+     belongs only on entries that are actually cut off — a short article drawn with a
+     gradient over its last line reads as a loading shimmer. */
+  .kind-article .content-container.clamped:not(.open)::after {
     content: '';
     position: absolute;
     left: 0;
