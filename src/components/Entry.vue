@@ -1,13 +1,13 @@
 <template>
-  <div>
-    <div :class="[classes, {'reading-detail': readerMode}]" @click="markRead(); $emit('select')">
-      <div v-if="readerMode" class="reader-action-bar" @click.stop>
+  <div :class="{'reading-view': readerMode}">
+    <div v-if="readerMode" class="reader-action-bar" @click.stop>
         <button type="button" class="entry-action" @click="like">Like</button>
         <button type="button" class="entry-action" @click.prevent="openReply">Reply</button>
         <button type="button" class="entry-action" @click.prevent="openRepost">Repost</button>
         <button type="button" class="entry-action" @click.prevent="openBookmark">Bookmark</button>
         <button type="button" class="entry-action" @click.prevent.stop="copyLink">{{ copied ? 'Copied' : 'Copy link' }}</button>
       </div>
+    <div :class="[classes, {'reading-detail': readerMode}]" @click="markRead(); $emit('select')">
       <div class="card-image" v-if="mainImage">
         <figure class="image">
           <img :src="mainImage" loading="lazy" decoding="async" alt=""/>
@@ -785,13 +785,14 @@ export default {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    padding: 10px;
-    margin: -12px -12px 16px;
-    border-bottom: 1px solid var(--line);
+    padding: 12px 16px;
+    margin: 0 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
     background: var(--card);
   }
 
-  .reading-detail .card-content { padding-top: 0; }
+  .reading-detail .card-content { padding-top: 1.5rem; }
 
   .reading-detail .content-container {
     max-height: none;
