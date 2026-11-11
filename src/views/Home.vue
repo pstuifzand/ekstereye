@@ -45,6 +45,7 @@
     <div class="column">
       <short-timeline :timeline="this.$store.state.globalTimeline"></short-timeline>
     </div>
+    </div>
 
     <channel-creator :is-open="this.$store.state.channelCreatorIsOpen"></channel-creator>
     <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower" :initial-channel="channel" :initial-query="feedFollowerQuery"></feed-follower>
