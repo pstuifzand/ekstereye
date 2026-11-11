@@ -45,18 +45,27 @@
   import LoginModal from '@/components/LoginModal'
   import ToastStack from '@/components/ToastStack'
   import { preferences, toggleTheme, stepScale } from '@/preferences'
+  import {getConnection, disconnect} from '@/ekConnection'
 
   export default {
     name: 'App',
     components: {LoginModal, ToastStack},
     mounted() {
       window.addEventListener('keydown', this.handleKey)
-      let item = window.localStorage.getItem('login_data');
-      if (item) {
-        let loginData = JSON.parse(item)
-        this.$store.dispatch('isLoggedIn', loginData)
-        this.$store.dispatch('startEventListening', '?action=events')
-      }
+      getConnection().then(connection => {
+        this.$store.dispatch('useEkConnection', connection)
+        if (connection.connected) {
+          this.$store.dispatch('startEventListening', '?action=events')
+        }
+      }).catch(() => {
+        // Standalone Ekstereye keeps its existing browser-owned IndieAuth session.
+        let item = window.localStorage.getItem('login_data')
+        if (item) {
+          let loginData = JSON.parse(item)
+          this.$store.dispatch('isLoggedIn', loginData)
+          this.$store.dispatch('startEventListening', '?action=events')
+        }
+      })
     },
     beforeDestroy() {
       window.removeEventListener('keydown', this.handleKey)
@@ -107,6 +116,9 @@
         stepScale(1)
       },
       signOut () {
+        if (this.$store.state.ekHost) {
+          disconnect().catch(() => {})
+        }
         this.$store.dispatch('logout')
         this.$router.push('/')
       },

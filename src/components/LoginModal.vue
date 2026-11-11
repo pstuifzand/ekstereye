@@ -24,13 +24,8 @@
   </div>
 </template>
 <script>
-  import Micropub from 'micropub-helper';
-  import helper from '@/helpers';
-  import microrp from 'rel-parser'
-
-  // IndieAuth requires redirect_uri to share the client_id origin, so the client
-  // id follows wherever the app is actually served from (localhost in dev).
-  const CLIENT_ID = import.meta.env.VITE_CLIENT_ID || window.location.origin + '/'
+  import {beginConnection as beginStandaloneConnection, completeConnection, saveConnectionEndpoints} from '@/connection'
+  import {beginConnection as beginEkConnection} from '@/ekConnection'
 
   export default {
     name: "LoginModal",
@@ -47,6 +42,9 @@
     computed: {
       classes() {
         return {'modal': true, 'is-active': this.show}
+      },
+      ekHost() {
+        return this.$store.state.ekHost
       }
     },
 
@@ -55,25 +53,16 @@
         this.show = false
       },
       login() {
-        const state = helper.generateState()
-
-        let micropub = new Micropub({
-          clientId: CLIENT_ID,
-          redirectUri: window.location.origin + '/callback',
-          me: this.url,
-          state: state,
-          scope: 'create post channels timeline'
-        })
-
-        micropub.getAuthUrl(false).then(url => {
-          let options = {
-            loginState: state
-          }
-          this.$store.dispatch('saveEndpoints', options).then(() => {
+        if (this.ekHost) {
+          beginEkConnection(this.url).catch(err => this.$store.commit('setError', err.message))
+          return
+        }
+        beginStandaloneConnection(this.url, window.location.origin + '/callback')
+          .then(({url, state}) => {
+            this.$store.dispatch('saveEndpoints', {loginState: state})
             window.location = url
           })
-          // eslint-disable-next-line
-        }).catch(err => console.log(err))
+          .catch(err => this.$store.commit('setError', err.message))
       }
     },
 
@@ -90,59 +79,15 @@
       if (!Object.prototype.hasOwnProperty.call(this.$route.query, 'code')) {
         return
       }
-      let code = this.$route.query['code']
-      if (!code.length) {
-        return
-      }
-
-      // FIXME: clientId, redirectUri
-      let micropub = new Micropub({
-        clientId: CLIENT_ID,
-        redirectUri: window.location.origin + '/callback',
-        me: this.$route.query['me'],
-        state: this.$store.state.loginState,
-        scope: 'create post channels timeline',
-      })
-
-      microrp(this.$route.query['me']).then(rels => {
-        // rel-parser returns arrays of rel values; the app stores single urls.
-        const first = value => (Array.isArray(value) ? value[0] : value)
-        const endpoints = {
-          token_endpoint: first(rels.token_endpoint),
-          auth_endpoint: first(rels.authorization_endpoint || rels.auth_endpoint),
-          micropub: first(rels.micropub),
-          microsub: first(rels.microsub)
-        }
-        // micropub-helper 2.x exposes options as a copy, so assign instead of mutating.
-        micropub.options = {
-          tokenEndpoint: endpoints.token_endpoint,
-          authEndpoint: endpoints.auth_endpoint,
-          micropubEndpoint: endpoints.micropub
-        }
-
-        let options = {
-          tokenEndpoint: endpoints.token_endpoint,
-          authEndpoint: endpoints.auth_endpoint,
-          micropubEndpoint: endpoints.micropub,
-          microsubEndpoint: endpoints.microsub
-        }
-
-        this.$store.dispatch('saveEndpoints', options)
-
-        micropub
-          .getToken(code)
-          .then(token => {
-            this.$store.dispatch('tokenResponse', {
-              access_token: token,
-              me: micropub.options.me,
-              scope: micropub.options.scope
-            })
-            this.show = false
-            this.$router.push('/')
-          })
-          // eslint-disable-next-line
-          .catch(err => console.log(err));
-      })
+      completeConnection(this.$route.query, this.$store.state.loginState)
+        .then(({endpoints, token}) => {
+          saveConnectionEndpoints(endpoints)
+          this.$store.dispatch('saveEndpoints', endpoints)
+          this.$store.dispatch('tokenResponse', token)
+          this.show = false
+          this.$router.push('/')
+        })
+        .catch(err => this.$store.commit('setError', err.message))
     }
   }
 </script>

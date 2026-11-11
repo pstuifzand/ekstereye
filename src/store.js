@@ -34,6 +34,7 @@ const store = new Vuex.Store({
       timelineStack: [],
       channel: {},
       logged_in: false,
+      ekHost: false,
       micropubEndpoint: '',
       microsubEndpoint: '/microsub',
       channelCreatorIsOpen: false,
@@ -109,6 +110,14 @@ const store = new Vuex.Store({
       state.scope = scope
       state.me = me
       state.access_token = access_token
+    },
+    useEkConnection(state, connection) {
+      state.ekHost = true
+      state.logged_in = Boolean(connection && connection.connected)
+      state.me = (connection && connection.me) || ''
+      state.access_token = ''
+      state.microsubEndpoint = (connection && connection.microsubEndpoint) || '/_ek/api/microsub'
+      state.micropubEndpoint = (connection && connection.micropubEndpoint) || ''
     },
     clearTimeline(state, {channel}) {
       state.channel = channel
@@ -274,6 +283,9 @@ const store = new Vuex.Store({
   },
 
   actions: {
+    useEkConnection({commit}, connection) {
+      commit('useEkConnection', connection || {connected: false})
+    },
     fetchChannels({commit}) {
       return request(this.state.microsubEndpoint + '?action=channels', {token: this.state.access_token})
         .then(response => {
@@ -478,7 +490,7 @@ const store = new Vuex.Store({
           channel = 'global'
         }
       }
-      const url = new URL(this.state.microsubEndpoint)
+      const url = new URL(this.state.microsubEndpoint, window.location.origin)
       url.searchParams.set('action', 'search')
       url.searchParams.set('channel', channel)
       url.searchParams.set('query', query.query)
