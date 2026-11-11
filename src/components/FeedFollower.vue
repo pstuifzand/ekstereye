@@ -33,7 +33,8 @@
           <feed-chooser :feed="feed" @showFeed="showFeed(feed)" @addFeed="addFeed(feed)" v-for="feed in feeds" :key="feed.url"/>
         </div>
 
-        <Timeline class="timeline" :timeline="timeline" :channel="channel"></Timeline>
+        <Timeline class="timeline" :timeline="timeline" :channel="channel"
+                  @followFeed="searchForFeed"></Timeline>
       </div>
 
       <footer class="modal-card-foot">
@@ -88,6 +89,11 @@
 
           this.$nextTick(function () {
             this.$refs.query.focus()
+            // Opened from an entry's Follow: the reader already asked for this URL, so run
+            // the search instead of leaving an empty box and a modal that looks broken.
+            if (this.query) {
+              this.search()
+            }
           })
         }
       }
@@ -125,6 +131,13 @@
               message: 'Could not search for feeds: ' + error.message
             })
           })
+      },
+      // The previewed items are normal entries with the usual action row, so their Follow
+      // has to mean something here too: search for that author instead of doing nothing.
+      searchForFeed(url) {
+        this.query = url || ''
+        this.timeline = {items: [], paging: {}}
+        return this.search()
       },
       showFeed(feed) {
         feed.loading = true

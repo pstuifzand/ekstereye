@@ -16,24 +16,14 @@
               </select>
             </div>
           </div>
-          <div class="control is-expanded">
-            <input
-              class="input"
-              type="url"
-              ref="url"
-              placeholder="https://example.com/feed.xml"
-              v-model="url"
-              @keypress.enter="follow"
-            />
-          </div>
           <div class="control">
-            <button class="button is-primary" :class="{'is-loading': following}" :disabled="!url" @click="follow">Follow</button>
+            <button class="button is-primary" @click="addFeed">Add feed</button>
           </div>
         </div>
 
         <p class="feed-hint">
-          Add a feed by URL, or
-          <a href="#" @click.prevent="$emit('browse', channel)">search for one</a>.
+          Adding a feed searches for it and previews its items first, so you can see what
+          you would be subscribing to. A feed URL works as a search too.
         </p>
 
         <p v-if="loading" class="feed-empty">Loading feeds…</p>
@@ -70,9 +60,7 @@
       return {
         channel: {},
         feeds: [],
-        url: '',
-        loading: false,
-        following: false
+        loading: false
       }
     },
 
@@ -88,16 +76,10 @@
         if (!open) {
           return
         }
-        this.url = ''
         this.channel = this.initialChannel && this.initialChannel.uid
           ? this.initialChannel
           : (this.channels[0] || {})
         this.load()
-        this.$nextTick(() => {
-          if (this.$refs.url) {
-            this.$refs.url.focus()
-          }
-        })
       }
     },
 
@@ -117,20 +99,11 @@
           .catch(() => { this.feeds = [] })
           .then(() => { this.loading = false })
       },
-      follow() {
-        const url = (this.url || '').trim()
-        if (!url || !this.channel.uid) {
-          return
-        }
-        this.following = true
-        return this.$store.dispatch('followFeed', {channel: this.channel.uid, url: url})
-          .then(() => {
-            this.url = ''
-            this.following = false
-            this.load()
-            this.$store.dispatch('fetchTimeline', {uid: this.channel.uid})
-          })
-          .catch(() => { this.following = false })
+      // Following is a decision, not a keystroke: hand the URL to the follower, which
+      // searches, lists the candidate feeds and previews their items. The old input here
+      // went straight to POST ?action=follow, so a typo subscribed you to anything.
+      addFeed() {
+        this.$emit('browse', this.channel)
       },
       unfollow(feed) {
         return this.$store.dispatch('unfollowFeed', {channel: this.channel.uid, url: feed.url})

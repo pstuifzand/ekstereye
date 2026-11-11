@@ -48,7 +48,7 @@
     </div>
 
     <channel-creator :is-open="this.$store.state.channelCreatorIsOpen"></channel-creator>
-    <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower" :initial-channel="channel" :initial-query="feedFollowerQuery"></feed-follower>
+    <feed-follower :is-open="feedFollowerIsOpen" @close="closeFeedFollower" :initial-channel="feedFollowerChannel" :initial-query="feedFollowerQuery"></feed-follower>
     <feeds-modal :is-open="feedsIsOpen" :initial-channel="channel"
                  @close="feedsIsOpen = false" @browse="browseFeeds"></feeds-modal>
     <search-popup :is-open="searchPopupIsOpen"></search-popup>
@@ -94,6 +94,9 @@
         feedFollowerIsOpen: false,
         feedsIsOpen: false,
         feedFollowerQuery: '',
+        // The follower opens for whichever channel the reader was looking at, which is not
+        // always the sidebar's current one (the Feeds panel has its own selector).
+        feedFollowerChannel: null,
         showPost: false,
         channelsVisible: false,
         shortcutsIsOpen: false,
@@ -134,16 +137,19 @@
         this.threeColumn = !this.threeColumn
         window.localStorage.setItem('reader-layout', this.threeColumn ? 'three-column' : 'current')
       },
-      openFeedFollower(query) {
+      openFeedFollower(query, channel) {
         this.feedFollowerIsOpen = true
-        this.feedFollowerQuery = query
+        this.feedFollowerQuery = query || ''
+        this.feedFollowerChannel = channel || this.channel
       },
       closeFeedFollower() {
         this.feedFollowerIsOpen = false
       },
-      browseFeeds() {
+      // The Feeds panel no longer follows a pasted URL itself; it hands the channel over
+      // so the follower can search, preview and then add.
+      browseFeeds(channel) {
         this.feedsIsOpen = false
-        this.openFeedFollower('')
+        this.openFeedFollower('', channel)
       },
       selectChannel(channel) {
         this.selectedItem = null
