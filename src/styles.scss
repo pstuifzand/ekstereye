@@ -72,6 +72,24 @@ body {
   color: var(--fg);
 }
 
+/* Bulma's modal pieces paint themselves: head is `whitesmoke`, body is `#fff`, foot is
+   whitesmoke. The container rule above cannot reach them, so in dark mode the Add feed
+   modal came out as a white slab with a dark input dropped into it. */
+.modal-card-head,
+.modal-card-foot {
+  background: var(--sel);
+  border-color: var(--line);
+}
+
+.modal-card-body {
+  background: var(--card);
+  color: var(--fg);
+}
+
+.modal-card-title {
+  color: var(--fg);
+}
+
 .navbar {
   background: var(--nav-bg);
   border-bottom: 1px solid var(--line);

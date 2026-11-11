@@ -191,19 +191,6 @@
     font-size: 0.85rem;
   }
 
-  /* Bulma paints the head and foot whitesmoke, which is a white slab in the dark theme. */
-  .modal-card-head,
-  .modal-card-foot {
-    background: var(--card, #fff);
-    color: var(--fg, #2f2f2f);
-    border-color: var(--line, #e4e4e4);
-  }
-
-  .modal-card-body {
-    background: var(--card, #fff);
-    color: var(--fg, #2f2f2f);
-  }
-
   .select select {
     background: var(--card, #fff);
     color: var(--fg, #2f2f2f);

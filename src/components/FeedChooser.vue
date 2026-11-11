@@ -36,7 +36,7 @@
     /*display: flex;*/
     /*flex-direction: row;*/
     /*justify-content: space-between;*/
-    border: 1px solid #eee;
+    border: 1px solid var(--line, #eee);
     padding: 6px;
   }
   .result > * {
