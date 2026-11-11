@@ -24,7 +24,10 @@
         <span>New since your last visit</span>
       </div>
       <div class="timeline--item" :key="item._id" :class="{'selected': index === selectedIndex}">
-        <TimelineEntry ref="entries" :item="item" :is-selected="index === selectedIndex"
+        <CompactEntry v-if="compact" ref="entries" :item="item" :is-selected="index === selectedIndex"
+                      @markRead="markRead(channel.uid, ...arguments)" @select="selectIndex(index)"
+                      @reply="$emit('replySelected', item)"/>
+        <TimelineEntry v-else ref="entries" :item="item" :is-selected="index === selectedIndex"
                        @debug="debug" @markRead="markRead(channel.uid, ...arguments)" @select="selectIndex(index)"
                        @followFeed="$emit('followFeed', arguments[0])" :is-main-entry="true"/>
       </div>
@@ -51,6 +54,7 @@
 
 <script>
   import TimelineEntry from '../components/Entry'
+  import CompactEntry from '../components/CompactEntry.vue'
   import { enqueueMarkRead, flushMarkRead } from '../markRead'
   import { entryKind, KIND_LABELS, KIND_ORDER } from '../entry-kind'
 
@@ -72,9 +76,13 @@
       keyboard: {
         type: Boolean,
         default: false
+      },
+      compact: {
+        type: Boolean,
+        default: false
       }
     },
-    components: {TimelineEntry},
+    components: {TimelineEntry, CompactEntry},
 
     data() {
       return {
@@ -237,6 +245,20 @@
       scrollEntryIntoView(el) {
         if (!el) {
           return
+        }
+        if (this.compact) {
+          const container = this.$el.closest('.reader-list')
+          if (container) {
+            const itemRect = el.getBoundingClientRect()
+            const containerRect = container.getBoundingClientRect()
+            if (itemRect.top < containerRect.top || itemRect.bottom > containerRect.bottom) {
+              const offset = itemRect.top < containerRect.top
+                ? itemRect.top - containerRect.top - 12
+                : itemRect.bottom - containerRect.bottom + 12
+              container.scrollTo({top: container.scrollTop + offset, behavior: 'smooth'})
+            }
+            return
+          }
         }
         const rect = el.getBoundingClientRect()
         const topMargin = 80 // fixed navbar plus breathing room

@@ -7,9 +7,9 @@
       </aside>
       <section class="reader-list">
         <h1 class="title is-5">{{ channel.name }}</h1>
-        <Timeline :timeline="$store.state.timeline" :channel="channel" :keyboard="true" @selected="selectedItem = $event" @older="loadOlder" @newer="loadNewer" @followFeed="openFeedFollower($event)" />
+        <Timeline :timeline="$store.state.timeline" :channel="channel" :keyboard="true" :compact="true" @selected="selectedItem = $event" @replySelected="openSelectedReply" @older="loadOlder" @newer="loadNewer" @followFeed="openFeedFollower($event)" />
       </section>
-      <section class="reader-detail" aria-label="Selected item"><Entry v-if="selectedItem" :item="selectedItem" :is-selected="true" :reader-mode="true" /><p v-else class="detail-empty">Select an item to read it.</p></section>
+      <section class="reader-detail" aria-label="Selected item"><Entry v-if="selectedItem" ref="detailEntry" :item="selectedItem" :is-selected="true" :reader-mode="true" /><p v-else class="detail-empty">Select an item to read it.</p></section>
     </div>
     <div v-else class="home columns">
     <div class="column" style="padding-top: 20px">
@@ -127,6 +127,9 @@
     },
 
     methods: {
+      openSelectedReply() {
+        if (this.$refs.detailEntry) this.$refs.detailEntry.openReply()
+      },
       toggleLayout() {
         this.threeColumn = !this.threeColumn
         window.localStorage.setItem('reader-layout', this.threeColumn ? 'three-column' : 'current')
