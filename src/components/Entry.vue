@@ -447,7 +447,18 @@ export default {
         } else if (this.isRepost) {
           return this.item.refs[this.item['repost-of']]
         } else if (this.isBookmark) {
-          return this.item.refs[this.item['bookmark-of']]
+          const ref = this.item.refs[this.item['bookmark-of']]
+          // Some feeds only include a URL in refs; keep the bookmark's own
+          // title/content visible while using the referenced URL as the link.
+          return ref ? {
+            ...this.item,
+            ...ref,
+            name: ref.name || this.item.name,
+            content: ref.content || this.item.content,
+            summary: ref.summary || this.item.summary,
+            author: ref.author || this.item.author || this.item._source,
+            url: ref.url || this.item['bookmark-of']
+          } : this.item
         }
       },
       isRef() {
