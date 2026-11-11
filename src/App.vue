@@ -156,6 +156,8 @@
     font-family: 'Avenir', Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    color: #2c3e50;
+    /* No colour here: the scaffolding's #2c3e50 is 1.6:1 on the dark page, and every
+       element without its own colour inherited it. `body` already sets --fg. */
+    color: inherit;
   }
 </style>

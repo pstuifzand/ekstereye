@@ -4,12 +4,15 @@
   --font-scale: 1;
   --bg: #ffffff;
   --fg: #2f2f2f;
-  --muted: #7a7a7a;
+  /* 4.29:1 was under the 4.5 line for 12px metadata on white, and 3.9:1 on the
+     selected grey card. */
+  --muted: #6f6f6f;
   --line: #e4e4e4;
   --card: #ffffff;
   --sel: #f4f4f6;
   --sel-bar: #363636;
   --accent: #5757e8;
+  --accent-fg: #ffffff;
   --nav-bg: #ffffff;
   --nav-fg: #2f2f2f;
   --button-bg: #ffffff;
@@ -18,19 +21,24 @@
 }
 
 body.theme-dark {
-  --bg: #121212;
-  --fg: #e6e6e6;
-  --muted: #9d9d9d;
-  --line: #2b2b2b;
-  --card: #1a1a1a;
-  --sel: #24242a;
-  --sel-bar: #cfcfcf;
-  --accent: #9a9aff;
-  --nav-bg: #1a1a1a;
+  --bg: #101012;
+  --fg: #e8e8ea;
+  --muted: #a9abb2;
+  /* A hairline has to be a hairline the reader can find: 1.8:1 against the card, which
+     is the quietest value that still separates cards from each other and from the page. */
+  --line: #41454e;
+  --card: #1d1e23;
+  --sel: #262832;
+  --sel-bar: #d0d2d8;
+  --accent: #a9a9ff;
+  --nav-bg: #1d1e23;
   --nav-fg: #f0f0f0;
-  --button-bg: #242424;
-  --button-fg: #e6e6e6;
-  --button-border: #3a3a3a;
+  --button-bg: #22242a;
+  --button-fg: #e8e8ea;
+  --button-border: #3a3d45;
+  /* The dark accent is light, so a filled button needs dark text on it (8.5:1) —
+     white on lavender is 2.5:1 and unreadable. */
+  --accent-fg: #14151a;
 }
 
 /* Everything in the app is sized in rem, so one number scales the whole reader. */
@@ -89,6 +97,24 @@ strong {
   color: var(--fg);
 }
 
+/* Bulma paints headings inside `.content` with its own near-black (#363636), which at
+   0-1-1 outranks `.title`/`.content` and takes the article's h1-h3 and every title
+   sitting in the content container down with it. Inherit from `.content` instead of
+   naming a colour, so one rule serves both themes. */
+.content h1,
+.content h2,
+.content h3,
+.content h4,
+.content h5,
+.content h6,
+.content p,
+.content li,
+.content dl,
+.content td,
+.content th {
+  color: inherit;
+}
+
 a {
   color: var(--accent);
 }
@@ -107,7 +133,7 @@ a {
 .button.is-primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--accent-fg);
 }
 
 body.theme-dark .button.is-white,
