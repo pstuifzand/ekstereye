@@ -237,6 +237,9 @@
         this.selectedIndex = next
         const selected = this.visibleItems[next]
         this.selectedId = selected ? selected._id : null
+        if (selected) {
+          this.markRead(this.channel.uid, selected)
+        }
         this.$emit('selected', selected || null)
         this.$nextTick(() => {
           this.scrollEntryIntoView(this.entryNodes()[next])
