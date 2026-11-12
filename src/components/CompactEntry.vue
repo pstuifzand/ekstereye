@@ -1,5 +1,5 @@
 <template>
-  <article class="compact-entry" :class="{selected: isSelected, unread: !item._is_read}" @click="select">
+  <article class="compact-entry" :class="{selected: isSelected, unread: !item._is_read}" role="button" tabindex="0" :aria-pressed="isSelected" @click="select" @keydown.enter.prevent="select" @keydown.space.prevent="select">
     <div class="compact-meta">
       <span class="compact-author">{{ author }}</span>
       <time v-if="item.published" :title="absoluteTime(item.published)">{{ stamp(item.published) }}</time>
@@ -81,20 +81,23 @@ export default {
 
 <style scoped>
 .compact-entry {
-  padding: 10px 12px;
-  margin-bottom: 6px;
-  border: 1px solid var(--line, #e4e4e4);
-  border-radius: 4px;
-  background: var(--card, #fff);
+  padding: 15px 20px;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
   cursor: pointer;
+  transition: background-color .15s ease;
+  outline-offset: -3px;
 }
-.compact-entry:hover { background: var(--sel, #f4f4f6); }
-.compact-entry.selected { box-shadow: inset 4px 0 var(--sel-bar, #363636); background: var(--sel, #f4f4f6); }
-.compact-entry.unread { border-color: var(--accent, #5757e8); }
+.compact-entry:hover { background: var(--hover-bg); }
+.compact-entry.selected { box-shadow: inset 3px 0 var(--accent); background: var(--sel); }
+.compact-entry.unread .compact-title { font-weight: 700; }
 .compact-meta { display: flex; justify-content: space-between; gap: 8px; color: var(--muted, #7a7a7a); font-size: .76rem; }
 .compact-meta time { flex: none; }
 .compact-author { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.compact-title { margin: 4px 0 0; color: var(--fg, #2f2f2f); font-size: .95rem; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.compact-title { margin: 4px 0 0; color: var(--fg, #2f2f2f); font-size: .875rem; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
 .compact-ref-glyph { color: var(--accent, #5757e8); margin-right: 5px; }
-.compact-excerpt { margin: 4px 0 0; color: var(--muted, #7a7a7a); font-size: .82rem; line-height: 1.35; }
+.compact-excerpt { margin: 7px 0 0; color: var(--muted, #7a7a7a); font-size: .78rem; line-height: 1.5; }
 </style>

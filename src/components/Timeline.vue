@@ -24,7 +24,7 @@
         <span>New since your last visit</span>
       </div>
       <div class="timeline--item" :key="item._id" :class="{'selected': index === selectedIndex}">
-        <CompactEntry v-if="compact" ref="entries" :item="item" :is-selected="index === selectedIndex"
+        <CompactEntry v-if="compact" ref="entries" :item="item" :is-selected="selectedItem ? item._id === selectedItem._id : index === selectedIndex"
                       @markRead="markRead(channel.uid, ...arguments)" @select="selectIndex(index)"
                       @reply="$emit('replySelected', item)"/>
         <TimelineEntry v-else ref="entries" :item="item" :is-selected="index === selectedIndex"
@@ -80,7 +80,8 @@
       compact: {
         type: Boolean,
         default: false
-      }
+      },
+      selectedItem: { type: Object, default: null }
     },
     components: {TimelineEntry, CompactEntry},
 
@@ -631,17 +632,17 @@
   .timeline-filter button {
     background: none;
     border: 1px solid var(--line, #dbdbdb);
-    border-radius: 999px;
-    padding: 2px 10px;
+    border-radius: 6px;
+    padding: 3px 9px;
     font-size: .8rem;
     color: var(--fg, #4a4a4a);
     cursor: pointer;
   }
 
   .timeline-filter button.is-active {
-    background: var(--sel-bar, #363636);
-    border-color: var(--sel-bar, #363636);
-    color: var(--bg, #fff);
+    background: var(--sel);
+    border-color: var(--line);
+    color: var(--fg);
   }
 
   .timeline-filter .count,

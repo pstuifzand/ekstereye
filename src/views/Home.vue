@@ -1,13 +1,26 @@
 <template>
   <div class="home" :class="{'three-column': threeColumn}">
-    <div class="layout-switch-row"><button class="button is-small" type="button" @click="toggleLayout">{{ threeColumn ? 'Current layout' : 'Three-column layout' }}</button></div>
+    <div class="workspace-bar">
+      <div class="workspace-label"><span class="workspace-title">Reader</span></div>
+      <div class="workspace-actions">
+        <div class="layout-switch" role="group" aria-label="Reader layout">
+          <button type="button" :class="{'is-active': !threeColumn}" :aria-pressed="!threeColumn" @click="threeColumn && toggleLayout()">Feed</button>
+          <button type="button" :class="{'is-active': threeColumn}" :aria-pressed="threeColumn" @click="!threeColumn && toggleLayout()">Split view</button>
+        </div>
+        <span class="toolbar-divider" aria-hidden="true"></span>
+        <button class="toolbar-button toolbar-secondary" @click.prevent="openPost"><ToolbarIcon name="compose" /> <span>New post</span></button>
+        <button class="toolbar-button toolbar-secondary" @click.prevent="feedsIsOpen = true"><ToolbarIcon name="feeds" /> <span>Manage feeds</span></button>
+        <button class="toolbar-button toolbar-ghost toolbar-icon-button" @click.prevent="shortcutsIsOpen = true" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)"><ToolbarIcon name="help" /></button>
+      </div>
+    </div>
+    <new-post class="mt-20" v-if="showPost && threeColumn" @close="showPost = false"></new-post>
     <div v-if="threeColumn" class="reader-columns">
       <aside class="reader-channels">
         <Channels :channels="channels"><div slot-scope="{ channel }"><Channel :channel="channel" @channel-selected="selectChannel" /></div></Channels>
       </aside>
       <section class="reader-list">
-        <h1 class="title is-5">{{ channel.name }}</h1>
-        <Timeline :timeline="$store.state.timeline" :channel="channel" :keyboard="true" :compact="true" @selected="selectedItem = $event" @replySelected="openSelectedReply" @older="loadOlder" @newer="loadNewer" @followFeed="openFeedFollower($event)" />
+        <div class="section-heading"><h1 class="title is-5">{{ channel.name }}</h1></div>
+        <Timeline :timeline="$store.state.timeline" :channel="channel" :keyboard="true" :compact="true" :selected-item="selectedItem" @selected="selectedItem = $event" @replySelected="openSelectedReply" @older="loadOlder" @newer="loadNewer" @followFeed="openFeedFollower($event)" @help="shortcutsIsOpen = true" />
       </section>
       <section class="reader-detail" aria-label="Selected item"><Entry v-if="selectedItem" ref="detailEntry" :item="selectedItem" :is-selected="true" :reader-mode="true" /><p v-else class="detail-empty">Select an item to read it.</p></section>
     </div>
@@ -23,19 +36,7 @@
     </div>
 
     <div class="timeline column is-three-fifths">
-      <div class="level is-mobile">
-        <div class="level-left">
-          <h1 class="title is-5">{{ channel.name }}</h1>
-        </div>
-        <div class="level-right timeline-buttons">
-          <div class="level-item">
-            <button class="button is-small" @click.prevent="openPost">New Post</button>
-            <button class="button is-small" @click.prevent="openFeedFollower('')">Add feed</button>
-            <button class="button is-small" @click.prevent="feedsIsOpen = true">Feeds</button>
-            <button class="button is-small" @click.prevent="shortcutsIsOpen = true" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">?</button>
-          </div>
-        </div>
-      </div>
+      <div class="section-heading"><h1 class="title is-5">{{ channel.name }}</h1></div>
       <new-post class="mt-20" v-if="showPost" @close="showPost = false"></new-post>
       <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="channel" :keyboard="true"
                 @older="loadOlder" @newer="loadNewer" @followFeed="openFeedFollower(arguments[0])"
@@ -59,6 +60,7 @@
 </template>
 
 <script>
+  import ToolbarIcon from '../components/ToolbarIcon.vue'
   import Timeline from '../components/Timeline.vue'
   import Entry from '../components/Entry.vue'
   import Channels from '../components/Channels.vue'
@@ -75,6 +77,7 @@
   export default {
     name: 'home',
     components: {
+      ToolbarIcon,
       FeedFollower,
       FeedsModal,
       Timeline,
@@ -243,14 +246,32 @@
     padding: 10px;
   }
 
-  .layout-switch-row { padding: 4px 0; }
-  .reader-columns { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(260px, 1fr) minmax(400px, 2fr); gap: 16px; align-items: start; }
-  .reader-channels, .reader-list, .reader-detail { min-width: 0; height: calc(100vh - 115px); overflow: auto; position: sticky; top: 70px; }
-  .reader-detail { padding: 12px; background: var(--card); border: 1px solid var(--line); }
-  .reader-detail .entry-actions { position: sticky; top: 0; z-index: 2; background: var(--card); opacity: 1; }
+  .workspace-bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 60px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .workspace-label { display: flex; flex-direction: column; gap: 2px; }
+  .workspace-eyebrow, .section-eyebrow { color: var(--muted); font-size: .65rem; font-weight: 700; letter-spacing: .12em; }
+  .workspace-title { font-size: 1rem; font-weight: 650; letter-spacing: -.02em; }
+  .workspace-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .workspace-actions .button { border-radius: 7px; }
+  .layout-switch { display: inline-flex; padding: 3px; border-radius: 7px; background: var(--sidebar-bg); }
+  .layout-switch button { border: 0; border-radius: 5px; background: transparent; color: var(--muted); font: inherit; font-size: .75rem; padding: 6px 11px; cursor: pointer; transition: background-color .15s, color .15s; }
+  .layout-switch button.is-active { background: var(--sel); color: var(--fg); }
+  .layout-switch button:hover { color: var(--fg); }
+  .section-heading { padding: 4px 0 12px; }
+  .section-heading .title { margin: 5px 0 0; }
+  .reader-columns { padding-top: 12px; }
+  @media (max-width: 700px) { .workspace-bar { align-items: flex-start; flex-direction: column; } .workspace-actions { width: 100%; } }
+  .reader-columns { display: grid; grid-template-columns: minmax(190px, 230px) minmax(280px, 360px) minmax(0, 1fr); gap: 0; align-items: start; }
+  .reader-channels, .reader-list, .reader-detail { min-width: 0; height: calc(100vh - 135px); overflow: auto; position: sticky; top: 120px; }
+  .reader-channels { background: var(--sidebar-bg); padding: 20px 12px; border-right: 1px solid var(--line); }
+  .reader-list { background: var(--list-bg); border-right: 1px solid var(--line); padding-top: 16px; }
+  .reader-list .section-heading { padding: 4px 20px 14px; }
+  .reader-list ::v-deep .timeline-toolbar { padding: 0 16px 12px; margin: 0; }
+  .reader-list ::v-deep .timeline--item { margin: 0; }
+  .reader-detail { background: var(--reader-bg); }
+  .reader-detail .entry-actions { position: sticky; top: 0; z-index: 2; background: var(--reader-bg); opacity: 1; }
   .detail-empty { color: var(--muted); padding: 24px; }
   @media (max-width: 900px) { .reader-columns { grid-template-columns: minmax(150px, 1fr) minmax(220px, 2fr); } .reader-detail { grid-column: 1 / -1; position: static; height: auto; } }
-  @media (max-width: 600px) { .reader-columns { display: block; } .reader-channels { height: auto; position: static; } .reader-list { height: 55vh; position: static; } .reader-detail { margin-top: 12px; } }
+  @media (max-width: 600px) { .reader-columns { display: block; } .reader-channels { height: auto; max-height: 180px; position: static; } .reader-list { height: 45vh; position: static; } .reader-detail { margin-top: 0; } }
 
   .timeline {
     margin-top: 20px;

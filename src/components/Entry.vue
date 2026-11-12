@@ -6,6 +6,7 @@
         <button type="button" class="entry-action" @click.prevent="openRepost">Repost</button>
         <button type="button" class="entry-action" @click.prevent="openBookmark">Bookmark</button>
         <button type="button" class="entry-action" @click.prevent.stop="copyLink">{{ copied ? 'Copied' : 'Copy link' }}</button>
+        <a v-if="currentItem.url" class="entry-action" :href="currentItem.url" target="_blank" rel="noopener noreferrer">Open original ↗</a>
       </div>
     <div :class="[classes, {'reading-detail': readerMode}]" @click="markRead(); $emit('select')">
       <div class="card-image" v-if="mainImage">
@@ -790,15 +791,19 @@ export default {
     z-index: 3;
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    padding: 12px 16px;
-    margin: 0 0 12px;
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    background: var(--card);
+    gap: 4px;
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--line);
+    background: var(--reader-bg);
   }
-
-  .reading-detail .card-content { padding-top: 1.5rem; }
+  .reader-action-bar .entry-action { padding: 7px 10px; border-radius: 6px; color: var(--muted); text-decoration: none; font-size: .8rem; transition: background-color .15s, color .15s; }
+  .reader-action-bar .entry-action:hover { background: var(--hover-bg); color: var(--fg); }
+  .reading-view .entry.reading-detail { max-width: 780px; margin: 0 auto; background: transparent; box-shadow: none; outline: none; border: 0; }
+  .reading-detail .card-content { padding: 48px 36px; }
+  .reading-detail .media-left { margin-right: 16px; }
+  .reading-detail .title.is-6 { font-size: 2rem; line-height: 1.2; letter-spacing: -.035em; margin: 16px 0 24px; }
+  .reading-detail .content-container > div > div:first-child { font-size: .8rem; color: var(--muted); }
+  @media (max-width: 600px) { .reading-detail .card-content { padding: 28px 20px; } .reading-detail .title.is-6 { font-size: 1.6rem; } }
 
   .reading-detail .content-container {
     max-height: none;
@@ -806,7 +811,8 @@ export default {
   }
 
   .reading-detail .content-container::after { display: none; }
-  .reading-detail .html-body { font-size: 1.12rem; line-height: 1.75; }
+  .reading-detail .html-body { max-width: 72ch; font-size: 1rem; line-height: 1.75; }
+  .reading-detail .html-body ::v-deep blockquote { background: transparent; border-left: 2px solid var(--accent); padding: 4px 0 4px 20px; }
 
   .entry-actions {
     opacity: 0;

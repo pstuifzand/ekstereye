@@ -3,7 +3,7 @@
     <nav id="nav" class="navbar is-fixed-top">
       <div class="container">
         <div class="navbar-brand">
-          <router-link to="/" class="navbar-item">Ekster</router-link>
+          <router-link to="/" class="navbar-item brand"><span class="brand-mark" aria-hidden="true">e</span>Ekster</router-link>
 
           <a role="button" :class="{'navbar-burger':true,'is-active':menuActive}" aria-label="menu" aria-expanded="false" @click="toggleMenu">
             <span aria-hidden="true"></span>
@@ -14,35 +14,28 @@
         <div :class="{'navbar-menu':true,'is-active':menuActive}">
           <div class="navbar-end">
             <div class="reader-controls">
-              <div class="control-group theme-switch" role="group" aria-label="Colour theme"
-                   :title="theme === 'system' ? 'Following the system setting — pick \u263c or \u263e to override' : 'Press the chosen one again to follow the system setting'">
-                <button type="button" class="button icon-button"
-                        :class="{'is-active': theme === 'light'}"
-                        :aria-pressed="theme === 'light' ? 'true' : 'false'"
-                        :title="theme === 'light' ? 'Light theme — press again to follow the system setting' : 'Light theme'"
-                        @click="setTheme('light')">
-                  <span aria-hidden="true">&#9788;</span>
+              <button type="button" class="toolbar-button toolbar-search" @click="openSearch" title="Search (Ctrl+K or S)"><ToolbarIcon name="search" /><span>Search</span><kbd>Ctrl K</kbd></button>
+              <span class="toolbar-divider" aria-hidden="true"></span>
+              <ToolbarMenu label="Appearance">
+                <template #trigger><ToolbarIcon :name="theme === 'light' ? 'sun' : theme === 'dark' ? 'moon' : 'monitor'" /></template>
+                <div class="toolbar-menu-label">Appearance</div>
+                <button v-for="option in themeOptions" :key="option.value" type="button" class="toolbar-menu-item" role="menuitemradio" :aria-checked="theme === option.value ? 'true' : 'false'" @click="chooseTheme(option.value)">
+                  <ToolbarIcon :name="option.icon" /><span>{{ option.label }}</span><ToolbarIcon v-if="theme === option.value" name="check" class="menu-check" />
                 </button>
-                <button type="button" class="button icon-button"
-                        :class="{'is-active': theme === 'dark'}"
-                        :aria-pressed="theme === 'dark' ? 'true' : 'false'"
-                        :title="theme === 'dark' ? 'Dark theme — press again to follow the system setting' : 'Dark theme'"
-                        @click="setTheme('dark')">
-                  <span aria-hidden="true">&#9790;</span>
-                </button>
-              </div>
-              <div class="control-group size-switch" role="group" aria-label="Text size">
-                <button type="button" class="button icon-button" @click="smaller" title="Smaller text">A&minus;</button>
-                <button type="button" class="button icon-button" @click="bigger" title="Larger text">A+</button>
-              </div>
-              <button type="button" class="button search-button" @click="openSearch" title="Search (s)">Search</button>
-              <button type="button" class="button signout-button" v-if="loggedIn" :title="me" @click="signOut">Sign out</button>
+                <div class="toolbar-menu-separator"></div>
+                <div class="toolbar-size-row"><span>Text size</span><div class="toolbar-size-controls"><button type="button" @click="smaller" title="Smaller text" aria-label="Smaller text">A−</button><button type="button" @click="bigger" title="Larger text" aria-label="Larger text">A+</button></div></div>
+              </ToolbarMenu>
+              <ToolbarMenu v-if="loggedIn" label="Account">
+                <template #trigger><ToolbarIcon name="user" /></template>
+                <div class="toolbar-menu-label account-identity" :title="me">{{ me || 'Account' }}</div>
+                <button type="button" class="toolbar-menu-item" role="menuitem" @click="signOut"><ToolbarIcon name="logout" /><span>Sign out</span></button>
+              </ToolbarMenu>
             </div>
           </div>
         </div>
       </div>
     </nav>
-    <div class="container">
+    <div class="container app-content">
       <div class="notification is-danger error-banner" v-if="error" role="alert">
         <button class="delete" aria-label="dismiss" @click="dismissError"></button>
         {{ error }}
@@ -60,12 +53,15 @@
 <script>
   import LoginModal from '@/components/LoginModal'
   import ToastStack from '@/components/ToastStack'
+  import ToolbarIcon from '@/components/ToolbarIcon'
+  import ToolbarMenu from '@/components/ToolbarMenu'
   import { preferences, setTheme as applyTheme, stepScale } from '@/preferences'
   import {getConnection, disconnect} from '@/ekConnection'
 
   export default {
     name: 'App',
-    components: {LoginModal, ToastStack},
+    components: {LoginModal, ToastStack, ToolbarIcon, ToolbarMenu},
+    data() { return { themeOptions: [{ value: 'system', label: 'System', icon: 'monitor' }, { value: 'light', label: 'Light', icon: 'sun' }, { value: 'dark', label: 'Dark', icon: 'moon' }] } },
     mounted() {
       window.addEventListener('keydown', this.handleKey)
       getConnection().then(connection => {
@@ -125,6 +121,13 @@
       setTheme (theme) {
         applyTheme(theme)
       },
+      chooseTheme (theme) {
+        if (theme === 'system') {
+          if (this.theme !== 'system') applyTheme(this.theme)
+        } else if (theme !== this.theme) {
+          applyTheme(theme)
+        }
+      },
       smaller () {
         stepScale(-1)
       },
@@ -144,6 +147,11 @@
         if (tag === 'input' || tag === 'textarea' || tag === 'select' || (el && el.isContentEditable)) {
           return
         }
+        if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'k') {
+          event.preventDefault()
+          this.openSearch()
+          return
+        }
         if (event.ctrlKey || event.metaKey || event.altKey) {
           return
         }
@@ -160,6 +168,9 @@
 </script>
 
 <style>
+  .brand { font-weight: 700; letter-spacing: -.03em; gap: 9px; }
+  .brand-mark { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 7px; background: var(--sel); color: var(--accent); font: 700 19px Georgia, serif; }
+  @media (min-width: 1024px) { #nav > .container, .app-content { width: 100%; max-width: none !important; padding-left: 20px; padding-right: 20px; } }
   .error-banner {
     margin: 12px 10px 0;
   }
@@ -169,7 +180,7 @@
   }
 
   #app {
-    font-family: 'Avenir', Helvetica, Arial, sans-serif;
+    font-family: Inter, 'Segoe UI', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     /* No colour here: the scaffolding's #2c3e50 is 1.6:1 on the dark page, and every
