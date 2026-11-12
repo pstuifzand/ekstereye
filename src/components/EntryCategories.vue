@@ -1,12 +1,13 @@
 <template>
   <div>
-    <input type="text" class="input" v-model="categories">
+    <input type="text" class="input" v-bind="$attrs" v-model="categories">
   </div>
 </template>
 
 <script>
 export default {
   name: "EntryCategories",
+  inheritAttrs: false,
   props: {
     'value': {
       type: Array,

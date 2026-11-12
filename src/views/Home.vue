@@ -22,10 +22,10 @@
         <div class="section-heading"><h1 class="title is-5">{{ channel.name }}</h1></div>
         <Timeline :timeline="$store.state.timeline" :channel="channel" :keyboard="true" :compact="true" :selected-item="selectedItem" @selected="selectedItem = $event" @replySelected="openSelectedReply" @older="loadOlder" @newer="loadNewer" @followFeed="openFeedFollower($event)" @help="shortcutsIsOpen = true" />
       </section>
-      <section class="reader-detail" aria-label="Selected item"><Entry v-if="selectedItem" ref="detailEntry" :item="selectedItem" :is-selected="true" :reader-mode="true" /><p v-else class="detail-empty">Select an item to read it.</p></section>
+      <section class="reader-detail" aria-label="Selected item"><Entry v-if="selectedItem" ref="detailEntry" :item="selectedItem" :is-selected="true" :reader-mode="true" @debug="$store.dispatch('openDebug', $event)" /><p v-else class="detail-empty">Select an item to read it.</p></section>
     </div>
     <div v-else class="home columns">
-    <div class="column" style="padding-top: 20px">
+    <div class="column feed-sidebar">
       <button class="channels-toggle button" type="button" @click="showChannels">Channels</button>
 
       <Channels :class="channelsClass" :channels="this.channels">
@@ -43,7 +43,7 @@
                 @help="shortcutsIsOpen = true"></Timeline>
     </div>
 
-    <div class="column">
+    <div class="column feed-activity" v-if="$store.state.globalTimeline.items && $store.state.globalTimeline.items.length">
       <short-timeline :timeline="this.$store.state.globalTimeline"></short-timeline>
     </div>
     </div>
@@ -276,6 +276,17 @@
   .timeline {
     margin-top: 20px;
     padding-bottom: 100px;
+  }
+  .feed-sidebar { padding-top: 20px; }
+  .timeline ::v-deep .timeline--item { max-width: 760px; }
+  @media (max-width: 599px) {
+    .home.columns { padding: 0; }
+    .workspace-bar { gap: 8px; padding: 10px 0; }
+    .workspace-actions { gap: 6px; }
+    .feed-sidebar { padding: 12px 12px 0; }
+    .channels-toggle { height: 32px; font-size: .8rem; }
+    .timeline { margin-top: 0; padding-top: 12px; }
+    .timeline .section-heading { padding-bottom: 0; }
   }
 
   .channels {

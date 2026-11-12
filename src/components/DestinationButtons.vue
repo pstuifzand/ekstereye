@@ -2,7 +2,7 @@
   <div>
     <div v-for="(target, i) in targets" :key="i" style="display: inline-block; margin: 0 3px 3px 0">
       <label>
-        <input type="checkbox" class="is-hidden cb-target" v-model="selected" :value="target.uid"/>
+        <input type="checkbox" class="cb-target" v-model="selected" :value="target.uid"/>
         <span class="tag is-light" v-text="target.name"></span>
       </label>
     </div>
@@ -49,8 +49,10 @@ export default {
 .cb-target:checked + .tag {
   background: var(--accent, #5757e8);
   border-color: var(--accent, #5757e8);
-  color: #fff;
+  color: var(--accent-fg, #fff);
 }
+
+.cb-target { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 .cb-target:focus-visible + .tag {
   outline: 2px solid var(--accent, #5757e8);

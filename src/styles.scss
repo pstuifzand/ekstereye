@@ -12,6 +12,7 @@
   --sel: #f4f4f6;
   --sel-bar: #363636;
   --accent: #5757e8;
+  --accent-hover: #3636aa;
   --accent-fg: #ffffff;
   --nav-bg: #ffffff;
   --nav-fg: #2f2f2f;
@@ -33,6 +34,7 @@ body.theme-dark {
   --sel: #252a36;
   --sel-bar: #c9a7ff;
   --accent: #c9a7ff;
+  --accent-hover: #e2d2ff;
   --nav-bg: #0b0d12;
   --nav-fg: #f1f2f5;
   --button-bg: #1a1d26;
@@ -208,6 +210,8 @@ strong {
 a {
   color: var(--accent);
 }
+a:hover, a:focus-visible { color: var(--accent-hover); }
+.content a:hover, .content a:focus-visible { color: var(--accent-hover); }
 
 .button {
   background: var(--button-bg);
@@ -289,6 +293,9 @@ a {
   border-color: var(--accent);
   color: var(--accent-fg);
 }
+.button.is-primary:hover:not([disabled]), .button.is-primary:focus-visible { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--accent-fg); }
+.button.is-primary[disabled] { background: var(--button-bg); border-color: var(--button-border); color: var(--muted); opacity: .65; }
+body:not(.theme-dark) .button.is-primary:hover:not([disabled]), body:not(.theme-dark) .button.is-primary:focus-visible { background: var(--accent-hover); border-color: var(--accent-hover); color: #fff; }
 
 body.theme-dark .button.is-white,
 body.theme-dark .button.is-light {
@@ -304,6 +311,10 @@ body.theme-dark .button.is-light {
   border-color: var(--button-border);
   color: var(--fg);
 }
+.input::placeholder, .textarea::placeholder { color: var(--muted); opacity: 1; }
+.input:hover, .textarea:hover, .select select:hover { border-color: var(--muted); }
+.input:focus, .textarea:focus, .select select:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.card-header-title { color: var(--fg); }
 
 .notification {
   background: var(--sel);

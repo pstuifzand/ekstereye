@@ -7,6 +7,7 @@
         <button type="button" class="entry-action" @click.prevent="openBookmark">Bookmark</button>
         <button type="button" class="entry-action" @click.prevent.stop="copyLink">{{ copied ? 'Copied' : 'Copy link' }}</button>
         <a v-if="currentItem.url" class="entry-action" :href="currentItem.url" target="_blank" rel="noopener noreferrer">Open original ↗</a>
+        <button type="button" class="entry-action" @click.prevent="debug">Debug</button>
       </div>
     <div :class="[classes, {'reading-detail': readerMode}]" @click="markRead(); $emit('select')">
       <div class="card-image" v-if="mainImage">
@@ -34,7 +35,7 @@
             </div>
 
             <div>
-              <div><a :href="author_url">{{ author_name }}</a>
+              <div class="entry-meta"><a :href="author_url">{{ author_name }}</a>
                 &middot;
                 <a :href="currentItem.url" target="_new" :title="niceTimeTitle"><span class="published">{{ niceTime }}</span></a>
               </div>
@@ -55,28 +56,22 @@
           </div>
         </div>
         <div>
-          <div class="level entry-actions" @click.stop>
-            <div class="level-item">
-              <button class="is-link" v-if="hasHiddenContent && !readerMode" @click.prevent.stop="toggleHiddenContent">
-                {{ hiddenContentVisible ? 'Show less' : 'Read more' }}
-              </button>
-            </div>
-            <div class="level-item" v-if="!readerMode">
-                <small>
-                <span v-if="showFooterButtons">
-                <button type="button" class="entry-action" @click="like">Like</button>
-                &middot; <button type="button" class="entry-action" @click.prevent="openReply">Reply</button>
-                &middot; <button type="button" class="entry-action" @click.prevent="openRepost">Repost</button>
-                &middot; <button type="button" class="entry-action" @click.prevent="openBookmark">Bookmark</button>
-                &middot; <button type="button" class="entry-action" @click.prevent.stop="copyLink">{{ copied ? 'Copied' : 'Copy link' }}</button>
-                &middot; <button type="button" class="entry-action" @click.prevent="$emit('followFeed', author_url)" title="Try to follow the feed this item comes from">Follow</button>
-                &middot; <button type="button" class="entry-action" @click.prevent="debug">Debug</button>
-                </span>
-                </small>
+          <div v-if="!readerMode" class="entry-actions" @click.stop>
+            <button type="button" class="read-more" v-if="hasHiddenContent" @click.prevent.stop="toggleHiddenContent">
+              {{ hiddenContentVisible ? 'Show less' : 'Read more' }}
+            </button>
+            <div class="feed-action-bar" v-if="showFooterButtons">
+              <button type="button" class="entry-action" @click="like">Like</button>
+              <button type="button" class="entry-action" @click.prevent="openReply">Reply</button>
+              <button type="button" class="entry-action" @click.prevent="openRepost">Repost</button>
+              <button type="button" class="entry-action" @click.prevent="openBookmark">Bookmark</button>
+              <button type="button" class="entry-action" @click.prevent.stop="copyLink">{{ copied ? 'Copied' : 'Copy link' }}</button>
+              <button type="button" class="entry-action" @click.prevent="$emit('followFeed', author_url)" title="Try to follow the feed this item comes from">Follow</button>
+              <button type="button" class="entry-action" @click.prevent="debug">Debug</button>
             </div>
           </div>
         </div>
-        <div class="media" v-if="reposting" @click.stop>
+        <div class="media response-form" v-if="reposting" @click.stop>
           <div class="media-content">
             <div class="field">
               <label class="label">Repost with a note</label>
@@ -99,7 +94,7 @@
           </div>
         </div>
 
-        <div class="media" v-if="replying" @click.stop>
+        <div class="media response-form" v-if="replying" @click.stop>
           <div class="media-content">
             <div class="field">
               <label class="label">Write your reply:</label>
@@ -110,15 +105,16 @@
             <div class="field">
               <div class="control">
                 <button class="button is-primary" @click="reply">Reply</button>
+                <button type="button" class="button response-cancel" @click="replying = false">Cancel</button>
               </div>
             </div>
           </div>
         </div>
-        <div class="media" v-if="bookmarking" @click.stop>
+        <div class="media response-form" v-if="bookmarking" @click.stop>
           <div class="media-content">
             <div class="field">
               <div class="control">
-                <input type="text" class="input" placeholder="Title" v-model="bookmarkTitle">
+                <label class="label">Title<input type="text" class="input bookmark-title" placeholder="Title" v-model="bookmarkTitle"></label>
               </div>
             </div>
             <div class="field">
@@ -139,6 +135,7 @@
             <div class="field">
               <div class="control">
                 <button class="button is-primary" @click="bookmark">Bookmark</button>
+                <button type="button" class="button response-cancel" @click="bookmarking = false">Cancel</button>
               </div>
             </div>
           </div>
@@ -627,6 +624,12 @@ export default {
     cursor: pointer;
   }
 
+  .entry-action:hover { color: var(--accent-hover); }
+  .response-form { margin-top: 20px; padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+  .response-form .label { color: var(--muted); font-size: .8rem; }
+  .response-form .bookmark-title { display: block; margin-top: 8px; }
+  .response-cancel { margin-left: 8px; }
+
   .entry-action:focus-visible {
     outline: 2px solid var(--accent, #5757e8);
     outline-offset: 2px;
@@ -814,21 +817,18 @@ export default {
   .reading-detail .html-body { max-width: 72ch; font-size: 1rem; line-height: 1.75; }
   .reading-detail .html-body ::v-deep blockquote { background: transparent; border-left: 2px solid var(--accent); padding: 4px 0 4px 20px; }
 
-  .entry-actions {
-    opacity: 0;
-    transition: opacity .12s ease-in-out;
-  }
-
-  .entry:hover .entry-actions,
-  .entry.selected .entry-actions,
-  .entry:focus-within .entry-actions {
-    opacity: 1;
-  }
-
-  @media (hover: none) {
-    .entry-actions {
-      opacity: 1;
-    }
+  .entry-meta { color: var(--muted); font-size: .8rem; }
+  .entry-meta a { color: var(--muted); }
+  .entry-meta a:hover { color: var(--accent-hover); }
+  .entry-actions { margin: 12px 0 0; }
+  .feed-action-bar { display: flex; flex-wrap: wrap; gap: 2px; margin-left: -8px; }
+  .feed-action-bar .entry-action, .read-more { padding: 6px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); text-decoration: none; font: inherit; font-size: .78rem; cursor: pointer; }
+  .feed-action-bar .entry-action:hover, .read-more:hover { background: var(--hover-bg); color: var(--fg); }
+  .read-more { margin: 0 0 8px -8px; color: var(--accent); font-weight: 600; }
+  @media (max-width: 600px) {
+    .entry:not(.reading-detail) .card-content { padding: 16px; }
+    .entry:not(.reading-detail) .media-left { margin-right: 12px; }
+    .entry:not(.reading-detail) .avatar, .entry:not(.reading-detail) .avatar-fallback { width: 32px; height: 32px; font-size: .8rem; }
   }
 
 </style>
