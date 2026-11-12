@@ -119,6 +119,40 @@ strong {
    0-1-1 outranks `.title`/`.content` and takes the article's h1-h3 and every title
    sitting in the content container down with it. Inherit from `.content` instead of
    naming a colour, so one rule serves both themes. */
+/* A like, bookmark or repost says what happened and links the target: the referenced
+   entry's title when the feed provides it, otherwise a readable host/path. */
+.ref-note {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 2px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.ref-note .ref-glyph {
+  color: var(--accent);
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.ref-note .ref-verb {
+  white-space: nowrap;
+}
+
+.ref-note .ref-target {
+  color: var(--fg);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+
+.ref-note .ref-target:hover,
+.ref-note .ref-target:focus {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 .content h1,
 .content h2,
 .content h3,

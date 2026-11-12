@@ -5,6 +5,9 @@
       <time v-if="item.published" :title="absoluteTime(item.published)">{{ stamp(item.published) }}</time>
     </div>
     <h2 v-if="item.name" class="compact-title">{{ item.name }}</h2>
+    <p v-else-if="refLine" class="compact-title compact-ref">
+      <span class="compact-ref-glyph" aria-hidden="true">{{ refGlyph }}</span> {{ refLine }}
+    </p>
     <p v-else class="compact-title">{{ excerpt }}</p>
     <p v-if="item.name && excerpt" class="compact-excerpt">{{ excerpt }}</p>
   </article>
@@ -13,6 +16,7 @@
 <script>
 import { stamp, absoluteTime } from '@/relative-time'
 import { entryKind } from '@/entry-kind'
+import { refEntry, refGlyph, refTarget, refSummary } from '@/refs'
 
 export default {
   name: 'CompactEntry',
@@ -34,6 +38,20 @@ export default {
     },
     kind() {
       return entryKind(this.item)
+    },
+    refGlyph() {
+      return refGlyph(this.item)
+    },
+    // A like or bookmark carries no text of its own, so the row would otherwise be an
+    // empty title. Say what happened and to what.
+    refLine() {
+      if (!refEntry(this.item) || this.item.name || this.excerpt) {
+        return ''
+      }
+      // Only a real refs entry may lend its title or author; without one the bookmark's
+      // own author is not the author of the page it points at.
+      const refs = this.item.refs || {}
+      return refSummary(this.item, refs[refTarget(this.item)] || null)
     }
   },
   methods: {
@@ -77,5 +95,6 @@ export default {
 .compact-meta time { flex: none; }
 .compact-author { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .compact-title { margin: 4px 0 0; color: var(--fg, #2f2f2f); font-size: .95rem; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.compact-ref-glyph { color: var(--accent, #5757e8); margin-right: 5px; }
 .compact-excerpt { margin: 4px 0 0; color: var(--muted, #7a7a7a); font-size: .82rem; line-height: 1.35; }
 </style>

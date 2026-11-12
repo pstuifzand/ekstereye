@@ -25,8 +25,11 @@
           </div>
 
           <div ref="content-container" :class="{'content': true, 'content-container': true, 'open': hiddenContentVisible, 'clamped': hasHiddenContent}">
-            <div v-if="isRef">
-              <div><small><a :href="outside_author_url">{{ outside_author_name }}</a>&nbsp;<span v-text="refText"></span>:</small></div>
+            <div v-if="isRef" class="ref-note">
+              <span class="ref-glyph" aria-hidden="true" v-text="refGlyph"></span>
+              <span class="ref-verb" v-text="refVerb"></span>
+              <a class="ref-target" :href="refTargetUrl" target="_blank" rel="noopener noreferrer"
+                 :title="refTargetUrl"><span v-text="refTargetLabel"></span></a>
             </div>
 
             <div>
@@ -148,6 +151,7 @@
 import { stamp, absoluteTime } from '@/relative-time'
 import { entryKind } from '@/entry-kind'
 import { sanitizeHtml } from '@/sanitize'
+import { refKind, refVerb, refGlyph, refTarget, refLabel, prettyTarget } from '@/refs'
 import DestinationButtons from "@/components/DestinationButtons";
 import EntryCategories from "@/components/EntryCategories";
 import SyndicationButtons from "@/components/SyndicationButtons";
@@ -333,13 +337,11 @@ export default {
           this.categories = []
         }).catch(() => {})
       },
+      // `refs` is optional: a notification feed commonly sends `like-of` with no refs at
+      // all. Requiring a refs entry meant those cards were not recognised as likes, and
+      // rendered as an empty box with no hint of what had been liked.
       hasRef(key) {
-        if (Object.prototype.hasOwnProperty.call(this.item, key) && Object.prototype.hasOwnProperty.call(this.item, 'refs')) {
-          if (Object.prototype.hasOwnProperty.call(this.item.refs, this.item[key])) {
-            return true
-          }
-        }
-        return false
+        return Object.prototype.hasOwnProperty.call(this.item, key) && Boolean(this.item[key])
       },
       toggleHiddenContent() {
         this.hiddenContentVisible = !this.hiddenContentVisible
@@ -436,18 +438,26 @@ export default {
         }
       },
       innerRef() {
+        // `refs` is an extension a Microsub server may leave out entirely — a like
+        // notification often arrives with nothing but `like-of`. Indexing undefined
+        // threw here, which took the whole card's render with it and left a blank box.
+        const refs = this.item.refs || {}
         if (this.isLike) {
-          return this.item.refs[this.item['like-of']] || {
-            type: "entry",
-            content: {
-              text: 'Like of ' + this.item['like-of']
-            },
+          // Keep the entry's own author and date (the notification source), point the
+          // link at the liked URL, and drop the body: the ref-note already names the
+          // target, so a synthetic "Like of <url>" text would only say it twice.
+          return refs[this.item['like-of']] || {
+            ...this.item,
             url: this.item['like-of'],
+            name: '',
+            content: '',
+            summary: ''
           }
         } else if (this.isRepost) {
-          return this.item.refs[this.item['repost-of']]
+          const ref = refs[this.item['repost-of']]
+          return ref ? { ...ref, url: ref.url || this.item['repost-of'] } : this.item
         } else if (this.isBookmark) {
-          const ref = this.item.refs[this.item['bookmark-of']]
+          const ref = refs[this.item['bookmark-of']]
           // Some feeds only include a URL in refs; keep the bookmark's own
           // title/content visible while using the referenced URL as the link.
           return ref ? {
@@ -473,17 +483,26 @@ export default {
       isRepost() {
         return this.hasRef('repost-of')
       },
-      refText() {
-        if (this.isLike) {
-          return 'liked'
-        }
-        if (this.isRepost) {
-          return 'reposted'
-        }
-        if (this.isBookmark) {
-          return 'bookmarked'
-        }
-        return ''
+      refKindName() {
+        return refKind(this.item)
+      },
+      refVerb() {
+        return refVerb(this.item)
+      },
+      refGlyph() {
+        return refGlyph(this.item)
+      },
+      refTargetUrl() {
+        return refTarget(this.item)
+      },
+      // Prefer the referenced entry's title, then its author, then a readable URL:
+      // "Liked p83.nl/2026/11/ek-reader" beats a blank card and tells the reader what
+      // was liked before they open it.
+      refTargetLabel() {
+        // Only a real `refs` entry may lend its title or author: for a bare bookmark
+        // `currentItem` is the bookmark itself, so its author is not the target's.
+        const refs = this.item.refs || {}
+        return refLabel(this.item, refs[this.refTargetUrl] || null) || prettyTarget(this.refTargetUrl)
       },
       rawContent() {
         const source = this.currentItem.content || this.currentItem.summary
@@ -530,32 +549,6 @@ export default {
           return []
         }
         return this.currentItem.photo.filter((photo) => photo !== this.mainImage)
-      },
-      outside_author_name() {
-        if (!this.item.author) {
-          return 'anonymouse';
-        }
-        if (!this.item.author.name) {
-          if (this.item.author.url) {
-            // A feed can put anything here, and a throw in a computed aborts the render
-            // of the whole card. Show the raw value instead of losing the entry.
-            try {
-              return new URL(this.item.author.url).hostname
-            } catch (e) {
-              return this.item.author.url
-            }
-          }
-        }
-        return this.item.author.name
-      },
-      outside_author_url() {
-        if (!this.item.author) {
-          return '';
-        }
-        if (!this.item.author.url) {
-          return '';
-        }
-        return this.item.author.url
       },
       author_name() {
         if (!this.currentItem.author) {
