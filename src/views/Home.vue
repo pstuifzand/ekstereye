@@ -13,7 +13,7 @@
         <button class="toolbar-button toolbar-ghost toolbar-icon-button" @click.prevent="shortcutsIsOpen = true" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)"><ToolbarIcon name="help" /></button>
       </div>
     </div>
-    <new-post class="mt-20" v-if="showPost && threeColumn" @close="showPost = false"></new-post>
+    <new-post v-if="showPost && threeColumn" @close="showPost = false"></new-post>
     <div v-if="threeColumn" class="reader-columns">
       <aside class="reader-channels">
         <Channels :channels="channels"><div slot-scope="{ channel }"><Channel :channel="channel" @channel-selected="selectChannel" /></div></Channels>
@@ -37,7 +37,7 @@
 
     <div class="timeline column is-three-fifths">
       <div class="section-heading"><h1 class="title is-5">{{ channel.name }}</h1></div>
-      <new-post class="mt-20" v-if="showPost" @close="showPost = false"></new-post>
+      <new-post v-if="showPost" @close="showPost = false"></new-post>
       <Timeline style="margin-top:20px" :timeline="this.$store.state.timeline" :channel="channel" :keyboard="true"
                 @older="loadOlder" @newer="loadNewer" @followFeed="openFeedFollower(arguments[0])"
                 @help="shortcutsIsOpen = true"></Timeline>
