@@ -3,7 +3,7 @@
     <nav id="nav" class="navbar is-fixed-top">
       <div class="container">
         <div class="navbar-brand">
-          <router-link to="/" class="navbar-item brand"><span class="brand-mark" aria-hidden="true">e</span>Ekster</router-link>
+          <router-link to="/" class="navbar-item brand"><img class="brand-mark" src="/favicon.svg" alt="">Ekster</router-link>
 
           <a role="button" :class="{'navbar-burger':true,'is-active':menuActive}" aria-label="menu" aria-expanded="false" @click="toggleMenu">
             <span aria-hidden="true"></span>
@@ -169,7 +169,7 @@
 
 <style>
   .brand { font-weight: 700; letter-spacing: -.03em; gap: 9px; }
-  .brand-mark { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 7px; background: var(--sel); color: var(--accent); font: 700 19px Georgia, serif; }
+  .brand-mark { display: block; width: 27px; height: 27px; border-radius: 7px; }
   @media (min-width: 1024px) { #nav > .container, .app-content { width: 100%; max-width: none !important; padding-left: 20px; padding-right: 20px; } }
   .error-banner {
     margin: 12px 10px 0;

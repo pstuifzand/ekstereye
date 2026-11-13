@@ -2,7 +2,7 @@
   <div :class="classes" class="login-modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
     <div class="login-background"></div>
     <form class="login-card" @submit.prevent="login">
-      <div class="login-brand"><span class="brand-mark" aria-hidden="true">✦</span> EKSTER <span class="brand-divider"></span> READER</div>
+      <div class="login-brand"><img class="brand-mark" src="/favicon.svg" alt=""> EKSTER <span class="brand-divider"></span> READER</div>
       <h1 id="login-title">A quieter place<br>to keep up.</h1>
       <p class="login-intro">Your feeds, your favourite voices, and everything worth reading — all in one place.</p>
       <div class="login-form">
@@ -89,7 +89,7 @@
 .login-background { position: fixed; inset: 0; background: var(--bg); }
 .login-card { position: relative; width: 100%; max-width: 470px; padding: 42px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); color: var(--fg); box-shadow: 0 24px 80px rgba(0, 0, 0, .2); }
 .login-brand { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .68rem; font-weight: 700; letter-spacing: .14em; }
-.brand-mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: var(--accent); color: var(--accent-fg); font-size: 1.15rem; }
+.brand-mark { display: block; width: 32px; height: 32px; border-radius: 9px; }
 .brand-divider { height: 14px; width: 1px; background: var(--line); }
 h1 { margin: 35px 0 12px; font-size: 2.2rem; font-weight: 700; letter-spacing: -.045em; line-height: 1.12; }
 .login-intro { max-width: 340px; color: var(--muted); line-height: 1.6; font-size: .95rem; }
