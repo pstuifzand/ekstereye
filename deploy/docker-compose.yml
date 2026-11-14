@@ -1,0 +1,39 @@
+# Ekster Reader — production compose for reader.p83.nl.
+#
+# Source of truth for the deployment; install it to /home/publog/reader on the
+# p83 host (see DEPLOY.md). The service is named `web` so nginx-proxy finds it
+# as the network alias `web` on nginxproxy_default; no host port is published,
+# because the proxy is the only intended way in.
+#
+# The host runs docker-compose 1.28.5 (v1), not the `docker compose` v2 plugin,
+# so this file needs a version key for `external: name:` to parse:
+#   docker-compose config && docker-compose pull web && docker-compose up -d web
+version: "3.7"
+
+services:
+  web:
+    image: ghcr.io/pstuifzand/ekstereye:master
+    restart: unless-stopped
+    environment:
+      - "VIRTUAL_HOST=reader.p83.nl"
+      - "VIRTUAL_PORT=80"
+      - "LETSENCRYPT_HOST=reader.p83.nl"
+      - "LETSENCRYPT_EMAIL=peter.stuifzand@gmail.com"
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  default:
+    external: true
+    name: nginxproxy_default
