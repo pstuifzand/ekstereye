@@ -29,7 +29,8 @@ jobs:
       - name: Lint, test and build
         run: |
           set -eu
-          docker run --rm -v "$PWD":/src -w /src node:22-alpine \
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$PWD":/src -w /src node:22-alpine \
             sh -c 'npm ci --no-audit --no-fund && npm run lint && npm test && npm run build && tar czf dist.tar.gz dist'
           ls -l dist.tar.gz
 
