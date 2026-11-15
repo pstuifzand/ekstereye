@@ -1,0 +1,68 @@
+# Lint, test, build the reader and publish the static bundle as a release asset.
+#
+# There is no image and no registry: the host serves the extracted dist/ from
+# Caddy, so what ships is the same Vite output the old nginx container held.
+name: build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERSION: ${{ github.sha }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint, test and build
+        run: |
+          set -eu
+          docker run --rm -v "$PWD":/src -w /src node:22-alpine \
+            sh -c 'npm ci --no-audit --no-fund && npm run lint && npm test && npm run build && tar czf dist.tar.gz dist'
+          ls -l dist.tar.gz
+
+      - name: Publish release
+        if: github.event_name != 'pull_request'
+        run: |
+          set -eu
+          SHORT=$(echo "$VERSION" | cut -c1-7)
+          TAG="build-$SHORT"
+          API="${{ github.server_url }}/api/v1/repos/${{ github.repository }}"
+          auth=(-H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/json")
+
+          sha256sum dist.tar.gz > SHA256SUMS
+
+          existing=$(curl -s -o /dev/null -w '%{http_code}' "${auth[@]}" "$API/releases/tags/$TAG")
+          if [ "$existing" = "200" ]; then
+            id=$(curl -s "${auth[@]}" "$API/releases/tags/$TAG" | jq -r '.id')
+            curl -s -X DELETE "${auth[@]}" "$API/releases/$id" >/dev/null
+          fi
+
+          curl -sS -f -X POST "${auth[@]}" "$API/releases" \
+            -d "{\"tag_name\":\"$TAG\",\"target_commitish\":\"$VERSION\",\"name\":\"build $SHORT\",\"body\":\"Static reader bundle for ${SHORT}.\"}" \
+            -o /tmp/release.json
+          RID=$(jq -r '.id' /tmp/release.json)
+          case "$RID" in
+            ""|null) echo "could not create release:"; cat /tmp/release.json; exit 1 ;;
+          esac
+          echo "release id $RID"
+
+          # Raw bodies: Gitea stores the request body verbatim as the asset.
+          for f in dist.tar.gz SHA256SUMS; do
+            curl -sS -f -X POST "${auth[@]}" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary "@$f" "$API/releases/$RID/assets?name=$(basename "$f")" >/dev/null
+            echo "attached $(basename "$f")"
+          done
