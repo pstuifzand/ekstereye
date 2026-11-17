@@ -36,34 +36,20 @@ jobs:
 
       - name: Publish release
         if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -eu
           SHORT=$(echo "$VERSION" | cut -c1-7)
           TAG="build-$SHORT"
-          API="${{ github.server_url }}/api/v1/repos/${{ github.repository }}"
-          auth=(-H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/json")
-
           sha256sum dist.tar.gz > SHA256SUMS
 
-          existing=$(curl -s -o /dev/null -w '%{http_code}' "${auth[@]}" "$API/releases/tags/$TAG")
-          if [ "$existing" = "200" ]; then
-            id=$(curl -s "${auth[@]}" "$API/releases/tags/$TAG" | jq -r '.id')
-            curl -s -X DELETE "${auth[@]}" "$API/releases/$id" >/dev/null
-          fi
+          # The tag is the build id, so re-running the same commit replaces the
+          # asset instead of failing on a duplicate tag.
+          gh release delete "$TAG" --yes --cleanup-tag 2>/dev/null || true
+          gh release create "$TAG" dist.tar.gz SHA256SUMS \
+            --title "build $SHORT" \
+            --notes "Static reader bundle for $SHORT." \
+            --target "$VERSION"
 
-          curl -sS -f -X POST "${auth[@]}" "$API/releases" \
-            -d "{\"tag_name\":\"$TAG\",\"target_commitish\":\"$VERSION\",\"name\":\"build $SHORT\",\"body\":\"Static reader bundle for ${SHORT}.\"}" \
-            -o /tmp/release.json
-          RID=$(jq -r '.id' /tmp/release.json)
-          case "$RID" in
-            ""|null) echo "could not create release:"; cat /tmp/release.json; exit 1 ;;
-          esac
-          echo "release id $RID"
-
-          # Raw bodies: Gitea stores the request body verbatim as the asset.
-          for f in dist.tar.gz SHA256SUMS; do
-            curl -sS -f -X POST "${auth[@]}" \
-              -H "Content-Type: application/octet-stream" \
-              --data-binary "@$f" "$API/releases/$RID/assets?name=$(basename "$f")" >/dev/null
-            echo "attached $(basename "$f")"
-          done
+          gh release view "$TAG" --json assets -q '.assets[].name'
