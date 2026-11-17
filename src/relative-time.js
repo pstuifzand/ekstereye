@@ -37,7 +37,12 @@ export function fromNow(value) {
 }
 
 // Relative time suits a status; an essay from three months ago reads better as a date.
+// A missing date has no stamp: dayjs(undefined) is *now*, and a card would claim
+// today for a post whose date the feed never carried.
 export function stamp(value) {
+  if (!value) {
+    return ''
+  }
   const moment = dayjs(value)
   if (!moment.isValid()) {
     return ''
@@ -47,6 +52,9 @@ export function stamp(value) {
 }
 
 export function absoluteTime(value) {
+  if (!value) {
+    return ''
+  }
   const moment = dayjs(value)
   if (!moment.isValid()) {
     return ''
