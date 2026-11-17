@@ -5,6 +5,7 @@
         <button type="button" class="entry-action" @click.prevent="openReply">Reply</button>
         <button type="button" class="entry-action" @click.prevent="openRepost">Repost</button>
         <button type="button" class="entry-action" @click.prevent="openBookmark">Bookmark</button>
+        <button type="button" class="entry-action" :aria-pressed="showThread" @click.prevent="toggleThread">Thread</button>
         <button type="button" class="entry-action" @click.prevent.stop="copyLink">{{ copied ? 'Copied' : 'Copy link' }}</button>
         <a v-if="currentItem.url" class="entry-action" :href="currentItem.url" target="_blank" rel="noopener noreferrer">Open original ↗</a>
         <button type="button" class="entry-action" @click.prevent="debug">Debug</button>
@@ -65,6 +66,7 @@
               <button type="button" class="entry-action" @click.prevent="openReply">Reply</button>
               <button type="button" class="entry-action" @click.prevent="openRepost">Repost</button>
               <button type="button" class="entry-action" @click.prevent="openBookmark">Bookmark</button>
+              <button type="button" class="entry-action" :aria-pressed="showThread" @click.prevent="toggleThread">Thread</button>
               <button type="button" class="entry-action" @click.prevent.stop="copyLink">{{ copied ? 'Copied' : 'Copy link' }}</button>
               <button type="button" class="entry-action" @click.prevent="$emit('followFeed', author_url)" title="Try to follow the feed this item comes from">Follow</button>
               <button type="button" class="entry-action" @click.prevent="debug">Debug</button>
@@ -142,6 +144,7 @@
         </div>
       </div>
     </div>
+    <thread-view v-if="showThread" :item="item" @close="showThread = false"/>
   </div>
 </template>
 
@@ -153,13 +156,15 @@ import { refKind, refVerb, refGlyph, refTarget, refLabel, prettyTarget } from '@
 import DestinationButtons from "@/components/DestinationButtons";
 import EntryCategories from "@/components/EntryCategories";
 import SyndicationButtons from "@/components/SyndicationButtons";
+import ThreadView from "@/components/Thread";
 
 export default {
     name: "Entry",
     components: {
       DestinationButtons,
       EntryCategories,
-      SyndicationButtons
+      SyndicationButtons,
+      ThreadView
     },
     props: {
       item: Object,
@@ -170,6 +175,7 @@ export default {
     data() {
       return {
         'replying': false,
+        showThread: false,
         'replyText': '',
         'showFooterButtons': true,
         reposting: false,
@@ -195,6 +201,11 @@ export default {
     methods: {
       debug() {
         this.$emit('debug', this.item)
+      },
+      // Loaded on demand: resolving a thread can make the server fetch ancestors from
+      // other sites, which is not something to do for every card that scrolls past.
+      toggleThread() {
+        this.showThread = !this.showThread
       },
       openReply() {
         this.replying = true
@@ -588,6 +599,7 @@ export default {
     },
     watch: {
       item() {
+        this.showThread = false
         this.avatarFailed = false
         this.mainImage = this.photo_first
         this.hiddenContentVisible = false

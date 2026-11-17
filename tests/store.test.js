@@ -210,3 +210,59 @@ describe('logout', () => {
     expect(store.state.error).toContain('session expired')
   })
 })
+
+describe('fetchThread action', () => {
+  it('asks for the thread of an entry, scoped to its channel', async () => {
+    const store = await freshStore()
+    store.commit('newAccessToken', {access_token: 'tok'})
+    request.mockImplementation(() => Promise.resolve({
+      items: [{type: 'entry', url: 'https://a/'}],
+      thread: {root: 'https://a/', partial: true, missing: 1}
+    }))
+
+    const result = await store.dispatch('fetchThread', {entry: 'b3d1', channel: 'home'})
+
+    const [url, options] = request.mock.calls[0]
+    expect(url).toContain('action=timeline')
+    expect(url).toContain('method=thread')
+    expect(url).toContain('entry=b3d1')
+    expect(url).toContain('channel=home')
+    expect(url).not.toContain('url=')
+    expect(options.method).toBeUndefined()
+    expect(options.token).toBe('tok')
+    expect(result.items).toHaveLength(1)
+    expect(result.thread.missing).toBe(1)
+  })
+
+  it('uses url when there is no entry, and never both', async () => {
+    const store = await freshStore()
+    await store.dispatch('fetchThread', {url: 'https://bob.example/re?x=1&y=2'})
+    const [url] = request.mock.calls[0]
+    expect(url).toContain('url=' + encodeURIComponent('https://bob.example/re?x=1&y=2'))
+    expect(url).not.toContain('entry=')
+  })
+
+  it('does not touch the timeline or add _is_read to fetched posts', async () => {
+    const store = await freshStore()
+    store.commit('newTimeline', {channel: {uid: 'home'}, timeline: {items: [item('a')], paging: {}}})
+    request.mockImplementation(() => Promise.resolve({items: [{type: 'entry', url: 'https://far/'}], thread: {}}))
+
+    const result = await store.dispatch('fetchThread', {entry: 'a'})
+
+    expect(store.state.timeline.items).toHaveLength(1)
+    expect('_is_read' in result.items[0]).toBe(false)
+  })
+
+  it('passes a failure through with its status so the panel can tell 400 from 404', async () => {
+    const store = await freshStore()
+    const error = Object.assign(new Error('The server answered 400.'), {status: 400})
+    request.mockImplementation(() => Promise.reject(error))
+    await expect(store.dispatch('fetchThread', {entry: 'a'})).rejects.toMatchObject({status: 400})
+  })
+
+  it('rejects when given neither entry nor url', async () => {
+    const store = await freshStore()
+    await expect(store.dispatch('fetchThread', {})).rejects.toThrow()
+    expect(request).not.toHaveBeenCalled()
+  })
+})

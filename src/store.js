@@ -331,6 +331,27 @@ const store = new Vuex.Store({
           return response
         })
     },
+    // Ekster's thread extension: the conversation around one entry. The answer is returned
+    // to the caller and deliberately not committed to the store: fetched ancestors are not
+    // subscriptions and must not touch the timeline, unread counts or read state.
+    fetchThread(_, {entry, url, channel}) {
+      let endpoint = this.state.microsubEndpoint + '?action=timeline&method=thread'
+      if (entry) {
+        endpoint += '&entry=' + encodeURIComponent(entry)
+        if (channel) {
+          endpoint += '&channel=' + encodeURIComponent(channel)
+        }
+      } else if (url) {
+        endpoint += '&url=' + encodeURIComponent(url)
+      } else {
+        return Promise.reject(new Error('A thread needs an entry or a URL.'))
+      }
+      return request(endpoint, {token: this.state.access_token})
+        .then(response => ({
+          items: (response && Array.isArray(response.items)) ? response.items : [],
+          thread: (response && response.thread) || {}
+        }))
+    },
     // Microsub follow/unfollow: GET lists the channel's feeds, POST adds or removes one.
     fetchFeeds(_, channelUid) {
       if (!channelUid) {
